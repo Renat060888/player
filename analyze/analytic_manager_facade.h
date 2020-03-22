@@ -1,0 +1,49 @@
+#ifndef ANALYTIC_MANAGER_FACADE_H
+#define ANALYTIC_MANAGER_FACADE_H
+
+#include <thread>
+
+#include "dispatcher_user.h"
+#include "dispatcher_player_contoller.h"
+
+class AnalyticManagerFacade
+{
+public:
+    struct SServiceLocator {
+
+    };
+
+    struct SInitSettings {
+        SServiceLocator services;
+    };
+
+    struct SState {
+        SInitSettings settings;
+        std::string lastError;
+    };
+
+    AnalyticManagerFacade();
+
+    bool init( const SInitSettings & _settings );
+    const SState & getState(){ return m_state; }
+    void shutdown();
+
+    DispatcherUser * getUserDispatcher();
+    MirrorPlayerController * getPlayer( const common_types::TUserId & _id );
+
+
+private:
+    void threadMaintenance();
+
+    // data
+    SState m_state;
+    bool shutdownCalled;
+
+    // service
+    DispatcherUser m_userDispatcher;
+    DispatcherPlayerContoller m_playerControllerDispatcher;
+    std::thread * m_threadMaintenance;
+
+};
+
+#endif // ANALYTIC_MANAGER_FACADE_H
