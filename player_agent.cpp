@@ -22,7 +22,7 @@ PlayerAgent::PlayerAgent()
     , m_shutdownCalled(false)
 {
     // system facility
-    m_systemEnvironment = new SystemEnvironment();
+    m_systemEnvironment = new SystemEnvironmentFacade();
 
     // I data generation ( NOTE: Player does not generate data )
 
@@ -55,7 +55,7 @@ bool PlayerAgent::init( const SInitSettings & _settings ){
     const SystemMonitor::STotalInfo info = SYSTEM_MONITOR.getTotalSnapshot();
     SYSTEM_MONITOR.printOnScreen( info );
 
-    SystemEnvironment::SInitSettings settings0;
+    SystemEnvironmentFacade::SInitSettings settings0;
     settings0.services;
     settings0.databaseHost = CONFIG_PARAMS.MONGO_DB_ADDRESS;
     settings0.databaseName = CONFIG_PARAMS.MONGO_DB_NAME;

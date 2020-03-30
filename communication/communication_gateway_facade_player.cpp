@@ -1,10 +1,10 @@
 
 #include <microservice_common/common/ms_common_utils.h>
 #include <microservice_common/communication/amqp_client_c.h>
-#include <dss_common/system/config_reader.h>
 
 #include "communication_gateway_facade_player.h"
 #include "command_factory.h"
+#include "system/config_reader.h"
 
 using namespace std;
 

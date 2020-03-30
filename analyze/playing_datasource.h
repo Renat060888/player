@@ -1,7 +1,8 @@
 #ifndef PLAYING_DATASOURCE_H
 #define PLAYING_DATASOURCE_H
 
-#include "storage/database_manager.h"
+#include <microservice_common/storage/database_manager_base.h>
+
 #include "common/common_types.h"
 
 // TODO: template ( what if objects kinds is many ? ) - trajectory, weather, etc...
@@ -21,7 +22,7 @@ public:
             {}
             bool empty;
             int32_t emptyStepsCount;
-            common_types::TSession sesNum;
+            common_types::TSessionNum sesNum;
             std::pair<common_types::TLogicStep, common_types::TLogicStep> logicStepRange;
             std::pair<int64_t, int64_t> timestampRangeMillisec;
         };        
@@ -35,7 +36,7 @@ public:
             , sesNum(0)
         {}
         common_types::TLogicStep logicStepCounter;
-        common_types::TSession sesNum;
+        common_types::TSessionNum sesNum;
     };
 
     struct SInitSettings {
@@ -98,7 +99,7 @@ private:
     bool loadSingleFrame( common_types::TLogicStep _logicStep, TObjectsAtOneStep & _step );
     inline void getActualData(  const SBeacon & _beacon,
                                 const common_types::TLogicStep _logicFormalStep,
-                                common_types::TSession & _sesNum,
+                                common_types::TSessionNum & _sesNum,
                                 common_types::TLogicStep & _logicActualStep );
     void fillState( const std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons, SState & _state );
     void destroyBeacons( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons );
@@ -115,7 +116,7 @@ private:
     int64_t m_currentReadStep;
 
     // service
-    DatabaseManager * m_database;
+    DatabaseManagerBase * m_database;
 };
 
 #endif // PLAYING_DATASOURCE_H

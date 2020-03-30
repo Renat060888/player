@@ -23,7 +23,7 @@ PlayingDatasource::PlayingDatasource()
 
 PlayingDatasource::~PlayingDatasource()
 {
-    DatabaseManager::destroyInstance( m_database );
+    DatabaseManagerBase::destroyInstance( m_database );
 
     destroyBeacons( m_timelineBeacons );
 }
@@ -34,9 +34,9 @@ bool PlayingDatasource::init( const SInitSettings & _settings ){
     m_state.settings = & m_settings;
 
     //
-    m_database = DatabaseManager::getInstance();
+    m_database = DatabaseManagerBase::getInstance();
 
-    DatabaseManager::SInitSettings settings;
+    DatabaseManagerBase::SInitSettings settings;
     settings.host = CONFIG_PARAMS.MONGO_DB_ADDRESS;
     settings.databaseName = CONFIG_PARAMS.MONGO_DB_NAME;
 
@@ -311,7 +311,7 @@ std::vector<SEventsSessionInfo> PlayingDatasource::checkSessionsForEmptyFrames( 
         return out;
     }
 
-    common_types::TSession currentSessionLastNumber = 0;
+    common_types::TSessionNum currentSessionLastNumber = 0;
 
     // for each session
     for( auto iter = _sessionInfo.begin(); iter != _sessionInfo.end(); ++iter ){
@@ -484,7 +484,7 @@ bool PlayingDatasource::loadPackage( int64_t _currentPackHeadStep, std::vector<T
 
 inline void PlayingDatasource::getActualData(   const SBeacon & _beacon,
                                                 const common_types::TLogicStep _logicFormalStep,
-                                                common_types::TSession & _sesNum,
+                                                common_types::TSessionNum & _sesNum,
                                                 common_types::TLogicStep & _logicActualStep ){
 
     int64_t offset = _logicFormalStep % PACKAGE_SIZE;

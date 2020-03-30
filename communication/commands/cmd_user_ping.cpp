@@ -1,4 +1,6 @@
 
+#include <jsoncpp/json/writer.h>
+
 #include "analyze/analytic_manager_facade.h"
 #include "cmd_user_ping.h"
 
@@ -21,15 +23,25 @@ bool CommandUserPing::exec(){
 
 //        userDipatcher->updateUserState( state );
 
-        const string resp = "{ \"cmd_name\" : \"pong\", \"player\" : \"hello client!\", \"error_occured\" : \"false\", \"code\" : \"NO_CODE\" }";
-        sendResponse( resp  );
+        Json::Value rootRecord;
+        rootRecord[ "cmd_name" ] = "pong";
+        rootRecord[ "player" ] = "hello client!";
+        rootRecord[ "error_occured" ] = false;
+        rootRecord[ "code" ] = "NO_CODE";
 
+        Json::FastWriter jsonWriter;
+        sendResponse( jsonWriter.write(rootRecord) );
         return true;
     }
     else{
-        const string resp = "{ \"cmd_name\" : \"pong\", \"player\" : \"you have a problem man!\", \"error_occured\" : \"true\", \"code\" : \"NOT_REGISTERED\" }";
-        sendResponse( resp  );
+        Json::Value rootRecord;
+        rootRecord[ "cmd_name" ] = "pong";
+        rootRecord[ "player" ] = "you have a problem man!";
+        rootRecord[ "error_occured" ] = true;
+        rootRecord[ "code" ] = "NOT_REGISTERED";
 
+        Json::FastWriter jsonWriter;
+        sendResponse( jsonWriter.write(rootRecord) );
         return true;
     }
 }

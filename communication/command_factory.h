@@ -3,8 +3,8 @@
 
 
 #include <microservice_common/communication/i_command_factory.h>
-#include <dss_common/common/common_types.h>
 
+#include "common/common_types.h"
 
 class CommandFactory : public ICommandFactory
 {

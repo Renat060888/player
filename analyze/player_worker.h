@@ -85,7 +85,7 @@ private:
     std::thread * m_threadPlaying;
     std::condition_variable m_cvPlayStartEvent;
     std::mutex m_muEmitStepProtect;
-    DatabaseManager * m_database;
+    DatabaseManagerBase * m_database;
 #ifdef OBJREPR_LIBRARY_EXIST
     objrepr::SpatialObjectManager * m_objectManager;
 #endif

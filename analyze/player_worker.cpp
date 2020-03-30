@@ -33,7 +33,7 @@ PlayerWorker::~PlayerWorker()
 {
     common_utils::threadShutdown( m_threadPlaying );
 
-    DatabaseManager::destroyInstance( m_database );
+    DatabaseManagerBase::destroyInstance( m_database );
 
     // TODO: destroy datasrc
 }
@@ -56,9 +56,9 @@ bool PlayerWorker::init( const SInitSettings & _settings ){
 #endif
 
     //
-    m_database = DatabaseManager::getInstance();
+    m_database = DatabaseManagerBase::getInstance();
 
-    DatabaseManager::SInitSettings settings;
+    DatabaseManagerBase::SInitSettings settings;
     settings.host = CONFIG_PARAMS.MONGO_DB_ADDRESS;
     settings.databaseName = CONFIG_PARAMS.MONGO_DB_NAME;
 

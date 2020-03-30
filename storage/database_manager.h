@@ -39,42 +39,9 @@ public:
         m_instanceCounter--;
     }
 
-    bool init( SInitSettings _settings );
+    bool init( SInitSettings _settings );    
 
-    // analyze - data
-    bool writeTrajectoryData( common_types::TPersistenceSetId _persId, const std::vector<common_types::SPersistenceTrajectory> & _data );
-    std::vector<common_types::SPersistenceTrajectory> readTrajectoryData( const common_types::SPersistenceSetFilter & _filter );
-    bool writeWeatherData( common_types::TPersistenceSetId _persId, const std::vector<common_types::SPersistenceWeather> & _data );
-    std::vector<common_types::SPersistenceWeather> readWeatherData( const common_types::SPersistenceSetFilter & _filter );
-
-    void removeTotalData( const common_types::SPersistenceSetFilter & _filter );
-
-    // analyze - metadata about datasources
-    common_types::TPersistenceSetId writePersistenceSetMetadata( const common_types::SPersistenceMetadataVideo & _type );
-    common_types::TPersistenceSetId writePersistenceSetMetadata( const common_types::SPersistenceMetadataDSS & _type );
-    common_types::TPersistenceSetId writePersistenceSetMetadata( const common_types::SPersistenceMetadataRaw & _type );
-    common_types::SPersistenceMetadata getPersistenceSetMetadata( common_types::TContextId _ctxId );
-    void removePersistenceSetMetadata( common_types::TPersistenceSetId _id );
-
-    // analyze - metadata about specific datasource
-    std::vector<common_types::SEventsSessionInfo> getPersistenceSetSessions( common_types::TPersistenceSetId _persId );
-    std::vector<common_types::SObjectStep> getSessionSteps( common_types::TPersistenceSetId _persId, common_types::TSession _sesNum );
-
-    // WAL
-    bool writeClientOperation( const common_types::SWALClientOperation & _operation );
-    std::vector<common_types::SWALClientOperation> getClientOperations();
-    std::vector<common_types::SWALClientOperation> getNonIntegrityClientOperations();
-    void removeClientOperation( std::string _uniqueKey = ALL_CLIENT_OPERATIONS );    
-
-    bool writeProcessEvent( const common_types::SWALProcessEvent & _event, bool _launch );
-    std::vector<common_types::SWALProcessEvent> getProcessEvents( common_types::TPid _pid = ALL_PROCESS_EVENTS );
-    std::vector<common_types::SWALProcessEvent> getNonIntegrityProcessEvents();
-    void removeProcessEvent( common_types::TPid _pid = ALL_PROCESS_EVENTS );
-
-    bool writeUserRegistration( const common_types::SWALUserRegistration & _registration );
-    std::vector<common_types::SWALUserRegistration> getUserRegistrations();
-    void removeUserRegistration( std::string _registrationId = ALL_REGISTRATION_IDS );
-
+    // TODO: empty so far
 
 private:
     static void systemInit();
@@ -85,9 +52,7 @@ private:
     DatabaseManager( const DatabaseManager & _inst ) = delete;
     DatabaseManager & operator=( const DatabaseManager & _inst ) = delete;
 
-    inline bool createIndex( const std::string & _tableName, const std::vector<std::string> & _fieldNames );
-    inline mongoc_collection_t * getAnalyticContextTable( common_types::TPersistenceSetId _persId );
-    inline std::string getTableName( common_types::TPersistenceSetId _persId );
+    inline bool createIndex( const std::string & _tableName, const std::vector<std::string> & _fieldNames );    
 
     // data
     mongoc_collection_t * m_tableWALClientOperations;

@@ -11,8 +11,9 @@ CONFIG -= qt
 QMAKE_CXXFLAGS += -Wno-unused-parameter
 QMAKE_CXXFLAGS += -Wno-unused-variable
 
+# TODO: add defines to logger, system monitor, restbed webserver, database, etc...
 DEFINES += \
-    SWITCH_LOGGER_SIMPLE \
+    SWITCH_LOGGER_ASTRA \
 
 LIBS += \
     -lmongoc-1.0 \
@@ -23,6 +24,8 @@ LIBS += \
     -lboost_filesystem \
     -lboost_program_options \ # TODO: wtf?
     -ljsoncpp \
+    -lunilog \  # TODO: wtf?
+    -lobjrepr \  # TODO: wtf?
     -lmicroservice_common \
 
 # NOTE: paths for dev environment ( all projects sources in one dir )

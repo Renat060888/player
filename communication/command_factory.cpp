@@ -5,13 +5,13 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <microservice_common/system/logger.h>
 #include <microservice_common/common/ms_common_utils.h>
-#include <dss_common/common/common_vars.h>
 
 #include "command_factory.h"
 #include "commands/cmd_user_ping.h"
 #include "commands/cmd_user_register.h"
 #include "commands/cmd_context_open.h"
 #include "commands/cmd_context_close.h"
+#include "common/common_vars.h"
 
 using namespace std;
 
