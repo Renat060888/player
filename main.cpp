@@ -8,7 +8,7 @@
 #include "system/args_parser.h"
 #include "system/config_reader.h"
 #include "system/path_locator.h"
-#include "analyze/player_controller.h"
+#include "player_controller.h"
 #include "player_agent.h"
 
 using namespace std;

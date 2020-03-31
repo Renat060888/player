@@ -39,7 +39,7 @@ SOURCES += \
     analyze/dispatcher_player_contoller.cpp \
     analyze/dispatcher_user.cpp \
     analyze/mirror_player_controller.cpp \
-    analyze/player_controller.cpp \
+    player_controller.cpp \
     analyze/player_iterator.cpp \
     analyze/player_worker.cpp \
     analyze/playing_datasource.cpp \
@@ -66,7 +66,7 @@ HEADERS += \
     analyze/dispatcher_player_contoller.h \
     analyze/dispatcher_user.h \
     analyze/mirror_player_controller.h \
-    analyze/player_controller.h \
+    player_controller.h \
     analyze/player_iterator.h \
     analyze/player_worker.h \
     analyze/playing_datasource.h \
