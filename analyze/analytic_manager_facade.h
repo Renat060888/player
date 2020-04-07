@@ -23,13 +23,14 @@ public:
     };
 
     AnalyticManagerFacade();
+    ~AnalyticManagerFacade();
 
     bool init( const SInitSettings & _settings );
     const SState & getState(){ return m_state; }
     void shutdown();
 
     DispatcherUser * getUserDispatcher();
-    MirrorPlayerController * getPlayer( const common_types::TUserId & _id );
+    ProxyPlayerController * getPlayer( const common_types::TUserId & _id );
 
 
 private:

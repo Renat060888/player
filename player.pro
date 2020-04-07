@@ -13,7 +13,8 @@ QMAKE_CXXFLAGS += -Wno-unused-variable
 
 # TODO: add defines to logger, system monitor, restbed webserver, database, etc...
 DEFINES += \
-    SWITCH_LOGGER_ASTRA \
+    SWITCH_LOGGER_SIMPLE \
+#    OBJREPR_LIBRARY_EXIST \
 
 LIBS += \
     -lmongoc-1.0 \
@@ -23,10 +24,15 @@ LIBS += \
     -lboost_system \
     -lboost_filesystem \
     -lboost_program_options \ # TODO: wtf?
-    -ljsoncpp \
-    -lunilog \  # TODO: wtf?
-    -lobjrepr \  # TODO: wtf?
+    -ljsoncpp \    
     -lmicroservice_common \
+
+contains( DEFINES, OBJREPR_LIBRARY_EXIST ){
+    message("connect 'unilog' and 'objrepr' libraries")
+LIBS += \
+    -lunilog \
+    -lobjrepr
+}
 
 # NOTE: paths for dev environment ( all projects sources in one dir )
 INCLUDEPATH +=  \
@@ -38,7 +44,7 @@ SOURCES += \
     analyze/datasource_mixer.cpp \
     analyze/dispatcher_player_contoller.cpp \
     analyze/dispatcher_user.cpp \
-    analyze/mirror_player_controller.cpp \
+    analyze/proxy_player_controller.cpp \
     player_controller.cpp \
     analyze/player_iterator.cpp \
     analyze/player_worker.cpp \
@@ -65,7 +71,7 @@ HEADERS += \
     analyze/datasource_mixer.h \
     analyze/dispatcher_player_contoller.h \
     analyze/dispatcher_user.h \
-    analyze/mirror_player_controller.h \
+    analyze/proxy_player_controller.h \
     player_controller.h \
     analyze/player_iterator.h \
     analyze/player_worker.h \

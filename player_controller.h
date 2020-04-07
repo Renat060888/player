@@ -3,7 +3,7 @@
 
 #include <microservice_common/communication/network_interface.h>
 
-#include "player_worker.h"
+#include "analyze/player_worker.h"
 
 class PlayerController : public INetworkObserver
 {

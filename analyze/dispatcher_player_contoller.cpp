@@ -24,11 +24,13 @@ void DispatcherPlayerContoller::removeObserver( IPlayerControllerDispatcherObser
 
 }
 
-MirrorPlayerController * DispatcherPlayerContoller::getPlayer( const common_types::TPlayerId & _id ){
+std::vector<ProxyPlayerController *> DispatcherPlayerContoller::getPlayers(){ return m_playerControllers; }
+
+ProxyPlayerController * DispatcherPlayerContoller::getPlayer( const common_types::TPlayerId & _id ){
 
 }
 
-MirrorPlayerController * DispatcherPlayerContoller::getPlayerByUser( const common_types::TUserId & _id ){
+ProxyPlayerController * DispatcherPlayerContoller::getPlayerByUser( const common_types::TUserId & _id ){
 
 }
 

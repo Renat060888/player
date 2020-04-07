@@ -9,6 +9,11 @@ AnalyticManagerFacade::AnalyticManagerFacade()
 
 }
 
+AnalyticManagerFacade::~AnalyticManagerFacade(){
+
+    shutdown();
+}
+
 bool AnalyticManagerFacade::init( const SInitSettings & _settings ){
 
 
@@ -19,6 +24,13 @@ bool AnalyticManagerFacade::init( const SInitSettings & _settings ){
 
 void AnalyticManagerFacade::shutdown(){
 
+    if( ! shutdownCalled ){
+        shutdownCalled = true;
+
+
+
+
+    }
 }
 
 void AnalyticManagerFacade::threadMaintenance(){
@@ -31,9 +43,9 @@ void AnalyticManagerFacade::threadMaintenance(){
     }
 }
 
-MirrorPlayerController * AnalyticManagerFacade::getPlayer( const common_types::TUserId & _id ){
+ProxyPlayerController * AnalyticManagerFacade::getPlayer( const common_types::TUserId & _id ){
 
-    MirrorPlayerController * player = m_playerControllerDispatcher.getPlayerByUser( _id );
+    ProxyPlayerController * player = m_playerControllerDispatcher.getPlayerByUser( _id );
     if( ! player ){
         m_state.lastError = m_playerControllerDispatcher.getState().lastError;
         return nullptr;

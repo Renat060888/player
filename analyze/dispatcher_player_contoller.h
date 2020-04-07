@@ -4,7 +4,7 @@
 #include <map>
 
 #include "common/common_types.h"
-#include "mirror_player_controller.h"
+#include "proxy_player_controller.h"
 
 class DispatcherPlayerContoller
 {
@@ -31,9 +31,9 @@ public:
     void addObserver( IPlayerControllerDispatcherObserver * _observer );
     void removeObserver( IPlayerControllerDispatcherObserver * _observer );
 
-    std::vector<MirrorPlayerController *> getPlayers(){ return m_playerControllers; }
-    MirrorPlayerController * getPlayer( const common_types::TPlayerId & _id );
-    MirrorPlayerController * getPlayerByUser( const common_types::TUserId & _id );
+    std::vector<ProxyPlayerController *> getPlayers();
+    ProxyPlayerController * getPlayer( const common_types::TPlayerId & _id );
+    ProxyPlayerController * getPlayerByUser( const common_types::TUserId & _id );
 
 
 private:
@@ -41,10 +41,10 @@ private:
 
     // data
     SState m_state;
-    std::vector<MirrorPlayerController *> m_playerControllers;
-    std::map<common_types::TPlayerId, MirrorPlayerController *> m_playersById;
-    std::map<common_types::TContextId, MirrorPlayerController *> m_playersByContextId;
-    std::map<common_types::TUserId, MirrorPlayerController *> m_playersByUserId;
+    std::vector<ProxyPlayerController *> m_playerControllers;
+    std::map<common_types::TPlayerId, ProxyPlayerController *> m_playersById;
+    std::map<common_types::TContextId, ProxyPlayerController *> m_playersByContextId;
+    std::map<common_types::TUserId, ProxyPlayerController *> m_playersByUserId;
     std::vector<IPlayerControllerDispatcherObserver *> m_observers;
 
     // service

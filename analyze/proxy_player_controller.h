@@ -5,7 +5,7 @@
 
 #include "common/common_types.h"
 
-class MirrorPlayerController
+class ProxyPlayerController
 {
 public:
     struct SInitSettings {
@@ -17,7 +17,7 @@ public:
         std::string lastError;
     };
 
-    MirrorPlayerController();
+    ProxyPlayerController();
 
     bool init( const SInitSettings & _settings );
     const SState & getState(){ return m_state; }
