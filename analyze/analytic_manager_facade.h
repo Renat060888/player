@@ -30,7 +30,7 @@ public:
     void shutdown();
 
     DispatcherUser * getUserDispatcher();
-    ProxyPlayerController * getPlayer( const common_types::TUserId & _id );
+    common_types::IPlayerService * getPlayer( const common_types::TUserId & _id );
 
 
 private:

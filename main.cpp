@@ -19,7 +19,7 @@ static bool initSingletons( int _argc, char ** _argv, char ** _env ){
     ArgsParser::SInitSettings settings;
     settings.argc = _argc;
     settings.argv = _argv;
-    settings.printConfigExample = std::bind( & AConfigReader::printToStdoutConfigExample, & CONFIG_READER );
+    settings.printConfigExample = std::bind( & AConfigReader::getConfigExample, & CONFIG_READER );
     settings.commandConvertor = & UNIFIED_COMMAND_CONVERTOR;
     if( ! ARGS_PARSER.init(settings) ){
         return false;
@@ -27,7 +27,7 @@ static bool initSingletons( int _argc, char ** _argv, char ** _env ){
 
     // configs
     ConfigReader::SIninSettings settings3;
-    settings3.mainConfigPath = ARGS_PARSER.getVal(EPlayerArguments::MAIN_CONFIG_PATH_FROM_CONSOLE);
+    settings3.mainConfigPath = ARGS_PARSER.getVal(EPlayerArguments::MAIN_CONFIG_PATH);
     settings3.commandConvertor = & UNIFIED_COMMAND_CONVERTOR;
     settings3.env = _env;
     settings3.projectName = "player_agent";
@@ -36,7 +36,7 @@ static bool initSingletons( int _argc, char ** _argv, char ** _env ){
     }
 
     // logger
-    const string loggerName = ( ! ARGS_PARSER.getVal(EPlayerArguments::SHELL_COMMAND_START_PLAYER_AGENT).empty()
+    const string loggerName = ( ARGS_PARSER.isKeyExist(EPlayerArguments::SHELL_CMD_START_PLAYER_AGENT)
                                 ? "PlayerAgent" : "PlayerController" );
 
     logger_common::SInitSettings settings2;
@@ -79,10 +79,10 @@ static void parseResponse( const std::string & _msg ){
 
 static bool executeShellCommand(){
 
-    if( ! ARGS_PARSER.getVal(EPlayerArguments::SHELL_COMMAND_START_PLAYER_AGENT).empty() ){
+    if( ARGS_PARSER.isKeyExist(EPlayerArguments::SHELL_CMD_START_PLAYER_AGENT) ){
 
         // deamonize
-        if( ! ARGS_PARSER.getVal(EPlayerArguments::AS_DAEMON).empty() ){
+        if( ARGS_PARSER.isKeyExist(EPlayerArguments::AS_DAEMON) ){
             if( ! Daemonizator::turnIntoDaemon() ){
                 return false;
             }
@@ -113,7 +113,7 @@ static bool executeShellCommand(){
             }
         }
     }
-    if( ! ARGS_PARSER.getVal(EPlayerArguments::SHELL_COMMAND_START_PLAYER_CONTROLLER).empty() ){
+    if( ARGS_PARSER.isKeyExist(EPlayerArguments::SHELL_CMD_START_PLAYER_CONTROLLER) ){
 
         // launch
         {
@@ -127,7 +127,7 @@ static bool executeShellCommand(){
             }
         }
     }
-    else if( ! ARGS_PARSER.getVal(EPlayerArguments::SHELL_COMMAND_TO_PLAYER).empty() ){
+    else if( ARGS_PARSER.isKeyExist(EPlayerArguments::SHELL_CMD_TO_PLAYER) ){
 
         // reinit logger for client side
         logger_common::SInitSettings settings;
@@ -146,7 +146,7 @@ static bool executeShellCommand(){
         }
 
         // send message to server
-        const string message =  ARGS_PARSER.getVal(EPlayerArguments::SHELL_COMMAND_TO_PLAYER);
+        const string message =  ARGS_PARSER.getVal(EPlayerArguments::SHELL_CMD_TO_PLAYER);
         const string response = shell.makeBlockedRequest( message );
         parseResponse( response );
     }

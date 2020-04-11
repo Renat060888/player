@@ -54,12 +54,13 @@ PNetworkClient PlayerController::connectToNetwork( const common_types::TPlayerId
 
     // controller for it
     SAmqpRouteParameters routes;
-    routes.predatorExchangePointName = "dss_dx_player_workers";
-    routes.predatorQueueName = "dss_q_player_worker_mailbox_" + _id;
-    routes.predatorRoutingKeyName = "dss_rk_to_player_worker_" + _id;
-    routes.targetExchangePointName = "dss_dx_player";
-    routes.targetQueueName = "dss_q_player_mailbox";
-    routes.targetRoutingKeyName = "dss_rk_to_player";
+    routes.predatorExchangePointName = "player_dx_workers";
+    routes.predatorQueueName = "player_q_worker_mailbox_" + _id;
+    routes.predatorRoutingKeyName = "player_rk_to_worker_" + _id;
+
+    routes.targetExchangePointName = "player_dx_agent";
+    routes.targetQueueName = "player_q_agent_mailbox";
+    routes.targetRoutingKeyName = "player_rk_to_agent";
 
     AmqpController::SInitSettings settings2;
     settings2.client = client;

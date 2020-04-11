@@ -411,8 +411,8 @@ bool PlayingDatasource::loadSingleFrame( common_types::TLogicStep _logicStep, TO
         SPersistenceSetFilter filter;
         filter.persistenceSetId = m_settings.persistenceSetId;
 
-        getActualData( beacon, _logicStep, filter.sessionId, filter.minLogicStep );
-        if( common_vars::INVALID_SESSION_NUM == filter.sessionId ){
+        getActualData( beacon, _logicStep, filter.sessionNum, filter.minLogicStep );
+        if( common_vars::INVALID_SESSION_NUM == filter.sessionNum ){
             return false; // empty area
         }
 
@@ -446,7 +446,7 @@ bool PlayingDatasource::loadPackage( int64_t _currentPackHeadStep, std::vector<T
             if( ! block->empty ){
                 SPersistenceSetFilter filter;
                 filter.persistenceSetId = m_settings.persistenceSetId;
-                filter.sessionId = block->sesNum;
+                filter.sessionNum = block->sesNum;
                 filter.minLogicStep = block->logicStepRange.first;
                 filter.maxLogicStep = block->logicStepRange.second;
 

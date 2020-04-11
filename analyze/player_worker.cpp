@@ -83,7 +83,8 @@ bool PlayerWorker::init( const SInitSettings & _settings ){
 
 bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vector<PlayingDatasource *> & _datasrc ){
 
-    const common_types::SPersistenceMetadata ctxMetadata = m_database->getPersistenceSetMetadata( _settings.ctxId );
+    const vector<common_types::SPersistenceMetadata> ctxMetadatas = m_database->getPersistenceSetMetadata( _settings.ctxId );
+    const common_types::SPersistenceMetadata & ctxMetadata = ctxMetadatas[ 0 ];
 
     // TODO: check 'update time' equality of all datasources
 
@@ -314,9 +315,9 @@ inline void PlayerWorker::emitStepInstant( TLogicStep _step ){
             VS_LOG_TRACE << PRINT_HEADER
                          << " abstr step " << _step
                          << " id " << objectsStep.front().objId
-                         << " sess " << objectsStep.front().session
+                         << " sess " << objectsStep.front().sessionNum
                          << " log t " << objectsStep.front().logicTime
-                         << " ast t " << objectsStep.front().timestampMillisec
+                         << " ast t " << objectsStep.front().astroTimeMillisec
                          << " total " << objectsStep.size()
                          << endl;
             // emit

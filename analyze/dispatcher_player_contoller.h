@@ -6,13 +6,15 @@
 #include "common/common_types.h"
 #include "proxy_player_controller.h"
 
+#include "player_controller.h"
+
 class DispatcherPlayerContoller
 {
     friend class CommandPlayerControllerPing;
 public:
-    class IPlayerControllerDispatcherObserver {
+    class IPlayerDispatcherObserver {
     public:
-        virtual ~IPlayerControllerDispatcherObserver(){}
+        virtual ~IPlayerDispatcherObserver(){}
 
         virtual void callbackPlayerControllerOnline( const common_types::TPlayerId & _id, bool _online ) = 0;
     };
@@ -25,15 +27,15 @@ public:
     DispatcherPlayerContoller();
     const SState & getState(){ return m_state; }
 
-    bool requestPlayer( const common_types::TUserId & _userId, const common_types::TContextId & _ctxId, const common_types::TMissionId & _missionId );
+    bool requestPlayer( const common_types::TUserId & _userId, const common_types::TContextId & _ctxId );
     void releasePlayer( const common_types::TPlayerId & _id );
 
-    void addObserver( IPlayerControllerDispatcherObserver * _observer );
-    void removeObserver( IPlayerControllerDispatcherObserver * _observer );
+    void addObserver( IPlayerDispatcherObserver * _observer );
+    void removeObserver( IPlayerDispatcherObserver * _observer );
 
-    std::vector<ProxyPlayerController *> getPlayers();
-    ProxyPlayerController * getPlayer( const common_types::TPlayerId & _id );
-    ProxyPlayerController * getPlayerByUser( const common_types::TUserId & _id );
+    std::vector<common_types::IPlayerService *> getPlayers();
+    common_types::IPlayerService * getPlayer( const common_types::TPlayerId & _id );
+    common_types::IPlayerService * getPlayerByUser( const common_types::TUserId & _id );
 
 
 private:
@@ -41,11 +43,14 @@ private:
 
     // data
     SState m_state;
-    std::vector<ProxyPlayerController *> m_playerControllers;
-    std::map<common_types::TPlayerId, ProxyPlayerController *> m_playersById;
-    std::map<common_types::TContextId, ProxyPlayerController *> m_playersByContextId;
-    std::map<common_types::TUserId, ProxyPlayerController *> m_playersByUserId;
-    std::vector<IPlayerControllerDispatcherObserver *> m_observers;
+    std::vector<common_types::IPlayerService *> m_playerControllers;
+    std::map<common_types::TPlayerId, common_types::IPlayerService *> m_playersById;
+    std::map<common_types::TContextId, common_types::IPlayerService *> m_playersByContextId;
+    std::map<common_types::TUserId, common_types::IPlayerService *> m_playersByUserId;
+    std::vector<IPlayerDispatcherObserver *> m_observers;
+
+    // TODO: temp ( must be in separate process )
+    std::vector<PlayerController *> m_realPlayerControllersForTest;
 
     // service
 

@@ -13,6 +13,10 @@ bool ProxyPlayerController::init( const SInitSettings & _settings ){
 
 }
 
+const IPlayerService::SServiceState & ProxyPlayerController::getServiceState(){
+    return m_state.m_serviceState;
+}
+
 void ProxyPlayerController::start(){
 
 }

@@ -43,9 +43,9 @@ void AnalyticManagerFacade::threadMaintenance(){
     }
 }
 
-ProxyPlayerController * AnalyticManagerFacade::getPlayer( const common_types::TUserId & _id ){
+common_types::IPlayerService * AnalyticManagerFacade::getPlayer( const common_types::TUserId & _id ){
 
-    ProxyPlayerController * player = m_playerControllerDispatcher.getPlayerByUser( _id );
+    common_types::IPlayerService * player = m_playerControllerDispatcher.getPlayerByUser( _id );
     if( ! player ){
         m_state.lastError = m_playerControllerDispatcher.getState().lastError;
         return nullptr;
@@ -57,4 +57,18 @@ ProxyPlayerController * AnalyticManagerFacade::getPlayer( const common_types::TU
 DispatcherUser * AnalyticManagerFacade::getUserDispatcher(){
     return & m_userDispatcher;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

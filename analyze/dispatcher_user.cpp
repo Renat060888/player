@@ -35,11 +35,26 @@ void DispatcherUser::runClock(){
 
 void DispatcherUser::addObserver( common_types::IUserDispatcherObserver * _observer ){
 
+    for( const IUserDispatcherObserver * const observer : m_observers ){
+        if( observer == _observer ){
+            return;
+        }
+    }
+
+    m_observers.push_back( _observer );
 }
 
 void DispatcherUser::removeObserver( common_types::IUserDispatcherObserver * _observer ){
 
-
+    for( auto iter = m_observers.begin(); iter != m_observers.end(); ){
+        if( (* iter) == _observer ){
+            iter = m_observers.erase( iter );
+            return;
+        }
+        else{
+            ++iter;
+        }
+    }
 }
 
 bool DispatcherUser::isRegistered( const common_types::TUserId & _userId ){
@@ -86,5 +101,5 @@ common_types::TUserId DispatcherUser::registerUser( std::string _userIp, common_
 
 void DispatcherUser::updateUserState( const common_types::SUserState & _state ){
 
-
+    // TODO: watch for user is online
 }

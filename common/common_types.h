@@ -126,7 +126,34 @@ public:
     virtual void removeObserver( IUserDispatcherObserver * _observer ) = 0;
 };
 
+class IPlayerService {
+public:
+    struct SServiceState {
+        EPlayerStatus status;
+        std::string lastError;
+        TPlayerId playerId;
+    };
 
+    virtual ~IPlayerService(){}
+
+    virtual const SServiceState & getServiceState() = 0;
+
+    virtual void start() = 0;
+    virtual void pause() = 0;
+    virtual void stop() = 0;
+    virtual bool stepForward() = 0;
+    virtual bool stepBackward() = 0;
+
+    virtual bool setRange( const common_types::TTimeRangeMillisec & _range ) = 0;
+    virtual void switchReverseMode( bool _reverse ) = 0;
+    virtual void switchLoopMode( bool _loop ) = 0;
+    virtual bool playFromPosition( int64_t _stepMillisec ) = 0;
+    virtual bool updatePlayingData() = 0;
+
+    virtual bool increasePlayingSpeed() = 0;
+    virtual bool decreasePlayingSpeed() = 0;
+    virtual void normalizePlayingSpeed() = 0;
+};
 
 
 // ---------------------------------------------------------------------------

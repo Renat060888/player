@@ -21,9 +21,9 @@ CommunicationGatewayFacadePlayer::~CommunicationGatewayFacadePlayer(){
 bool CommunicationGatewayFacadePlayer::init( const SInitSettings & _settings ){
 
     SAmqpRouteParameters initialRoute;
-    initialRoute.predatorExchangePointName = "dss_dx_player";
-    initialRoute.predatorQueueName = "dss_q_player_mailbox";
-    initialRoute.predatorRoutingKeyName = "dss_rk_to_player";
+    initialRoute.predatorExchangePointName = "player_dx_agent";
+    initialRoute.predatorQueueName = "player_q_agent_mailbox";
+    initialRoute.predatorRoutingKeyName = "player_rk_to_agent";
 
     m_settings = _settings;
     m_settings.paramsForInitialAmqp.route = initialRoute;

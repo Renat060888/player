@@ -52,14 +52,16 @@ public:
     void stop();
     bool stepForward();
     bool stepBackward();
+
     bool setRange( const common_types::TTimeRangeMillisec & _range );
     void switchReverseMode( bool _reverse );
     void switchLoopMode( bool _loop );
     bool playFromPosition( int64_t _stepMillisec );
+    bool updatePlayingData();
+
     bool increasePlayingSpeed();
     bool decreasePlayingSpeed();
     void normalizePlayingSpeed();
-    bool updatePlayingData();
 
 
 private:

@@ -25,7 +25,7 @@ bpo::options_description ArgsParser::getArgumentsDescrTemplateMethodPart() {
 void ArgsParser::checkArgumentsTemplateMethodPart( const bpo::variables_map & _varMap ) {
 
     if( _varMap.find("main-config") != _varMap.end() ){
-        m_commmandLineArgs[EPlayerArguments::MAIN_CONFIG_PATH_FROM_CONSOLE] = _varMap["main-config"].as<std::string>();
+        m_commmandLineArgs[EPlayerArguments::MAIN_CONFIG_PATH] = _varMap["main-config"].as<std::string>();
     }
 
     if( _varMap.find("daemon") != _varMap.end() ){
@@ -33,16 +33,16 @@ void ArgsParser::checkArgumentsTemplateMethodPart( const bpo::variables_map & _v
     }
 
     if( _varMap.find("start-agent") != _varMap.end() ){
-        m_commmandLineArgs[EPlayerArguments::SHELL_COMMAND_START_PLAYER_AGENT] = "bla-bla";
+        m_commmandLineArgs[EPlayerArguments::SHELL_CMD_START_PLAYER_AGENT] = "bla-bla";
     }
 
     if( _varMap.find("start-contoller") != _varMap.end() ){
-        m_commmandLineArgs[EPlayerArguments::SHELL_COMMAND_START_PLAYER_CONTROLLER] = "bla-bla";
+        m_commmandLineArgs[EPlayerArguments::SHELL_CMD_START_PLAYER_CONTROLLER] = "bla-bla";
     }
 
     if( _varMap.find("stop") != _varMap.end() ){
-        m_commmandLineArgs[EPlayerArguments::SHELL_COMMAND_TO_PLAYER]
-            = AArgsParser::getSettings().commandConvertor->getCommandsFromProgramArgs( { {"", ""} } );
+        m_commmandLineArgs[EPlayerArguments::SHELL_CMD_TO_PLAYER]
+            = AArgsParser::getSettings().commandConvertor->getCommandFromProgramArgs( { {"", ""} } );
     }
 }
 
