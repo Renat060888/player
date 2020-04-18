@@ -78,6 +78,8 @@ void PlayerController::launch(){
 
 std::string PlayerController::createPingMessage(){
 
+    m_worker.getState();
+
     Json::Value playerState;
 
     Json::Value rootRecord;
@@ -86,6 +88,7 @@ std::string PlayerController::createPingMessage(){
     rootRecord[ "player_state" ] = playerState;
     rootRecord[ "player_id" ] = m_state.settings.id;
     rootRecord[ "error_occured" ] = false;
+    rootRecord[ "error_str" ] = "HOLY_SHIT";
 
     Json::FastWriter jsonWriter;
     return jsonWriter.write( rootRecord );
@@ -110,11 +113,11 @@ PNetworkClient PlayerController::connectToNetwork( const common_types::TPlayerId
     PAmqpClient client = std::make_shared<AmqpClient>( INetworkEntity::INVALID_CONN_ID );
 
     AmqpClient::SInitSettings clientSettings;
-    clientSettings.serverHost = CONFIG_PARAMS.COMMUNICATION_AMQP_SERVER_HOST;
-    clientSettings.amqpVirtualHost = CONFIG_PARAMS.COMMUNICATION_AMQP_VIRTUAL_HOST;
-    clientSettings.port = CONFIG_PARAMS.COMMUNICATION_AMQP_SERVER_PORT;
-    clientSettings.login = CONFIG_PARAMS.COMMUNICATION_AMQP_LOGIN;
-    clientSettings.pass = CONFIG_PARAMS.COMMUNICATION_AMQP_PASS;
+    clientSettings.serverHost = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_SERVER_HOST;
+    clientSettings.amqpVirtualHost = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_VIRTUAL_HOST;
+    clientSettings.port = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_SERVER_PORT;
+    clientSettings.login = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_LOGIN;
+    clientSettings.pass = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_PASS;
     clientSettings.deliveredMessageExpirationSec = 60;
 
     if( ! client->init(clientSettings) ){

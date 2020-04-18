@@ -1,7 +1,7 @@
 #ifndef COMMUNICATION_GAREWAY_FACADE_DSS_H
 #define COMMUNICATION_GAREWAY_FACADE_DSS_H
 
-#include <microservice_common/communication/communication_gateway.h>
+#include <microservice_common/communication/communication_gateway_facade.h>
 
 #include "common/common_types.h"
 

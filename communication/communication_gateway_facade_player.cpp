@@ -27,12 +27,12 @@ bool CommunicationGatewayFacadePlayer::init( const SInitSettings & _settings ){
 
     m_settings = _settings;
     m_settings.paramsForInitialAmqp.route = initialRoute;
-    m_settings.paramsForInitialAmqp.enable = CONFIG_PARAMS.COMMUNICATION_AMQP_ENABLE;
-    m_settings.paramsForInitialAmqp.host = CONFIG_PARAMS.COMMUNICATION_AMQP_SERVER_HOST;
-    m_settings.paramsForInitialAmqp.virtHost = CONFIG_PARAMS.COMMUNICATION_AMQP_VIRTUAL_HOST;
-    m_settings.paramsForInitialAmqp.port = CONFIG_PARAMS.COMMUNICATION_AMQP_SERVER_PORT;
-    m_settings.paramsForInitialAmqp.login = CONFIG_PARAMS.COMMUNICATION_AMQP_LOGIN;
-    m_settings.paramsForInitialAmqp.pass = CONFIG_PARAMS.COMMUNICATION_AMQP_PASS;
+    m_settings.paramsForInitialAmqp.enable = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_ENABLE;
+    m_settings.paramsForInitialAmqp.host = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_SERVER_HOST;
+    m_settings.paramsForInitialAmqp.virtHost = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_VIRTUAL_HOST;
+    m_settings.paramsForInitialAmqp.port = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_SERVER_PORT;
+    m_settings.paramsForInitialAmqp.login = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_LOGIN;
+    m_settings.paramsForInitialAmqp.pass = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_PASS;
     m_settings.specParams.factory = new CommandFactory( m_settings.services );
 
     if( ! CommunicationGatewayFacade::init(m_settings) ){

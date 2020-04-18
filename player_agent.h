@@ -5,9 +5,9 @@
 #include <future>
 
 #include <boost/signals2.hpp>
-#include <microservice_common/system/system_environment_facade.h>
 
 #include "common/common_types.h"
+#include "system/system_environment_facade_player.h"
 #include "communication/communication_gateway_facade_player.h"
 #include "storage/storage_engine_facade.h"
 #include "analyze/analytic_manager_facade.h"
@@ -47,7 +47,7 @@ private:
     std::future<void> m_selfShutdownFuture;
 
     // service
-    SystemEnvironmentFacade * m_systemEnvironment;
+    SystemEnvironmentFacadePlayer * m_systemEnvironment;
     CommunicationGatewayFacadePlayer * m_communicateGateway;
     StorageEngineFacade * m_storageEngine;
     AnalyticManagerFacade * m_analyticManager;

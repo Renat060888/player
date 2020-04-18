@@ -7,6 +7,7 @@
 
 class CommandPlayerControllerPing : public ICommandExternal
 {
+    friend class CommandFactory;
 public:
     CommandPlayerControllerPing( common_types::SIncomingCommandServices * _services );
 
@@ -14,7 +15,7 @@ public:
 
 
 private:
-
+    common_types::SPlayingServiceState playerState;
 
 
 };

@@ -37,8 +37,8 @@ bool PlayingDatasource::init( const SInitSettings & _settings ){
     m_database = DatabaseManagerBase::getInstance();
 
     DatabaseManagerBase::SInitSettings settings;
-    settings.host = CONFIG_PARAMS.MONGO_DB_ADDRESS;
-    settings.databaseName = CONFIG_PARAMS.MONGO_DB_NAME;
+    settings.host = CONFIG_PARAMS.baseParams.MONGO_DB_ADDRESS;
+    settings.databaseName = CONFIG_PARAMS.baseParams.MONGO_DB_NAME;
 
     if( ! m_database->init(settings) ){
         return false;

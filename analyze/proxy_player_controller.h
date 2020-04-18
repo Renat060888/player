@@ -13,7 +13,7 @@ public:
     };
 
     struct SState{
-        SServiceState m_serviceState;
+        common_types::SPlayingServiceState m_serviceState;
         SInitSettings settings;
 
         common_types::EPlayerStatus status;
@@ -25,7 +25,7 @@ public:
     bool init( const SInitSettings & _settings );
     const SState & getState(){ return m_state; }
 
-    const SServiceState & getServiceState() override;
+    const common_types::SPlayingServiceState & getServiceState() override;
 
     void start() override;
     void pause() override;

@@ -6,14 +6,16 @@
 class ConfigReader : public AConfigReader
 {
 public:
-    struct SConfigParameters : AConfigReader::SConfigParameters {
-
+    struct SConfigParameters {
+        AConfigReader::SConfigParameters baseParams;
     };
 
     static ConfigReader & singleton(){
         static ConfigReader instance;
         return instance;
     }
+
+    const SConfigParameters & get(){ return m_parameters; }
 
 
 private:
@@ -29,7 +31,8 @@ private:
     virtual std::string getConfigExampleDerive() override;
 
 
-
+    // data
+    SConfigParameters m_parameters;
 };
 #define CONFIG_READER ConfigReader::singleton()
 #define CONFIG_PARAMS ConfigReader::singleton().get()

@@ -17,7 +17,6 @@ public:
             : inited(false)
             , globalStepCount(0)
             , globalStepUpdateMillisec(0)
-            , settings(nullptr)
         {}
         //
         bool inited;
@@ -25,8 +24,8 @@ public:
         common_types::TTimeRangeMillisec globalDataRangeMillisec;
         int64_t globalStepCount;
         int64_t globalStepUpdateMillisec;
-        // refs
-        SInitSettings * settings;
+        // original
+        SInitSettings settings;
     };
 
     struct SMixerTrack {
@@ -58,7 +57,6 @@ private:
 
     // data
     SState m_state;
-    SInitSettings m_settings;
     std::vector<SMixerTrack> m_mixerTracks;
     PlayingDatasource::TObjectsAtOneStep m_currentStepFromDatasources;
 

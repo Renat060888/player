@@ -41,16 +41,16 @@ static bool initSingletons( int _argc, char ** _argv, char ** _env ){
 
     logger_common::SInitSettings settings2;
     settings2.loggerName = loggerName;
-    settings2.unilogConfigPath = CONFIG_PARAMS.SYSTEM_UNILOG_CONFIG_PATH;
+    settings2.unilogConfigPath = CONFIG_PARAMS.baseParams.SYSTEM_UNILOG_CONFIG_PATH;
 
-    if( CONFIG_PARAMS.SYSTEM_LOG_TO_STDOUT ){
+    if( CONFIG_PARAMS.baseParams.SYSTEM_LOG_TO_STDOUT ){
         settings2.logEndpoints = (logger_common::ELogEndpoints)( (int)settings2.logEndpoints | (int)logger_common::ELogEndpoints::Stdout );
     }
-    if( CONFIG_PARAMS.SYSTEM_LOG_TO_FILE ){
+    if( CONFIG_PARAMS.baseParams.SYSTEM_LOG_TO_FILE ){
         settings2.logEndpoints = (logger_common::ELogEndpoints)( (int)settings2.logEndpoints | (int)logger_common::ELogEndpoints::File );
-        settings2.fileName = CONFIG_PARAMS.SYSTEM_LOGFILE_NAME;
-        settings2.filePath = CONFIG_PARAMS.SYSTEM_REGULAR_LOGFILE_PATH;
-        settings2.rotationSizeMb = CONFIG_PARAMS.SYSTEM_LOGFILE_ROTATION_SIZE_MB;
+        settings2.fileName = CONFIG_PARAMS.baseParams.SYSTEM_LOGFILE_NAME;
+        settings2.filePath = CONFIG_PARAMS.baseParams.SYSTEM_REGULAR_LOGFILE_PATH;
+        settings2.rotationSizeMb = CONFIG_PARAMS.baseParams.SYSTEM_LOGFILE_ROTATION_SIZE_MB;
     }
 
     Logger::singleton().initGlobal( settings2 );
@@ -90,11 +90,11 @@ static bool executeShellCommand(){
             // reinit logger for daemon
             logger_common::SInitSettings settings2;
             settings2.loggerName = "PlayerAgentDaemon";
-            settings2.unilogConfigPath = ConfigReader::singleton().get().SYSTEM_UNILOG_CONFIG_PATH;
+            settings2.unilogConfigPath = CONFIG_PARAMS.baseParams.SYSTEM_UNILOG_CONFIG_PATH;
             settings2.logEndpoints = logger_common::ELogEndpoints::File;
-            settings2.fileName = CONFIG_PARAMS.SYSTEM_LOGFILE_NAME;
-            settings2.filePath = CONFIG_PARAMS.SYSTEM_REGULAR_LOGFILE_PATH;
-            settings2.rotationSizeMb = CONFIG_PARAMS.SYSTEM_LOGFILE_ROTATION_SIZE_MB;
+            settings2.fileName = CONFIG_PARAMS.baseParams.SYSTEM_LOGFILE_NAME;
+            settings2.filePath = CONFIG_PARAMS.baseParams.SYSTEM_REGULAR_LOGFILE_PATH;
+            settings2.rotationSizeMb = CONFIG_PARAMS.baseParams.SYSTEM_LOGFILE_ROTATION_SIZE_MB;
 
             Logger::singleton().initGlobal( settings2 );
 
@@ -134,7 +134,7 @@ static bool executeShellCommand(){
         // reinit logger for client side
         logger_common::SInitSettings settings;
         settings.loggerName = "PlayerShellClient";
-        settings.unilogConfigPath = ConfigReader::singleton().get().SYSTEM_UNILOG_CONFIG_PATH;
+        settings.unilogConfigPath = CONFIG_PARAMS.baseParams.SYSTEM_UNILOG_CONFIG_PATH;
         Logger::singleton().initGlobal( settings );
 
         // shell client

@@ -22,7 +22,7 @@ PlayerAgent::PlayerAgent()
     , m_shutdownCalled(false)
 {
     // system facility
-    m_systemEnvironment = new SystemEnvironmentFacade();
+    m_systemEnvironment = new SystemEnvironmentFacadePlayer();
 
     // I data generation ( NOTE: Player does not generate data )
 
@@ -55,18 +55,18 @@ bool PlayerAgent::init( const SInitSettings & _settings ){
     const SystemMonitor::STotalInfo info = SYSTEM_MONITOR.getTotalSnapshot();
     SYSTEM_MONITOR.printOnScreen( info );
 
-    SystemEnvironmentFacade::SInitSettings settings0;
+    SystemEnvironmentFacadePlayer::SInitSettings settings0;
     settings0.services;
-    settings0.databaseHost = CONFIG_PARAMS.MONGO_DB_ADDRESS;
-    settings0.databaseName = CONFIG_PARAMS.MONGO_DB_NAME;
-    settings0.restoreSystemAfterInterrupt = CONFIG_PARAMS.SYSTEM_RESTORE_INTERRUPTED_SESSION;
+    settings0.databaseHost = CONFIG_PARAMS.baseParams.MONGO_DB_ADDRESS;
+    settings0.databaseName = CONFIG_PARAMS.baseParams.MONGO_DB_NAME;
+    settings0.restoreSystemAfterInterrupt = CONFIG_PARAMS.baseParams.SYSTEM_RESTORE_INTERRUPTED_SESSION;
     settings0.uniqueLockFileFullPath = PATH_LOCATOR.getUniqueLockFile();
     if( ! m_systemEnvironment->init(settings0) ){
         return false;
     }
 
     CommunicationGatewayFacadePlayer::SInitSettings settings1;
-    settings1.requestsFromConfig = CONFIG_PARAMS.INITIAL_REQUESTS;
+    settings1.requestsFromConfig = CONFIG_PARAMS.baseParams.INITIAL_REQUESTS;
     settings1.requestsFromWAL = m_systemEnvironment->serviceForWriteAheadLogging()->getInterruptedOperations();
     settings1.asyncNetwork = true;
     settings1.services = m_commandServices;
@@ -120,15 +120,15 @@ void PlayerAgent::launch(){
 
 void PlayerAgent::checkForSelfShutdown(){
 
-    if( CONFIG_PARAMS.SYSTEM_SELF_SHUTDOWN_SEC != 0 ){
+    if( CONFIG_PARAMS.baseParams.SYSTEM_SELF_SHUTDOWN_SEC != 0 ){
         m_selfShutdownFuture = std::async( std::launch::async, [this](){
             VS_LOG_WARN << PRINT_HEADER
                         << " ------------------------------ (!) SELF-SHUTDOWN AFTER"
-                        << " [" << CONFIG_PARAMS.SYSTEM_SELF_SHUTDOWN_SEC << "] sec"
+                        << " [" << CONFIG_PARAMS.baseParams.SYSTEM_SELF_SHUTDOWN_SEC << "] sec"
                         << " (!) ------------------------------"
                      << endl;
 
-            std::this_thread::sleep_for( std::chrono::seconds(CONFIG_PARAMS.SYSTEM_SELF_SHUTDOWN_SEC) );
+            std::this_thread::sleep_for( std::chrono::seconds(CONFIG_PARAMS.baseParams.SYSTEM_SELF_SHUTDOWN_SEC) );
 
             VS_LOG_WARN << PRINT_HEADER
                         << " ------------------------------ (!) SELF-SHUTDOWN INITIATE (!) ------------------------------"

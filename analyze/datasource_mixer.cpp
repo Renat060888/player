@@ -17,8 +17,7 @@ DatasourceMixer::~DatasourceMixer()
 
 bool DatasourceMixer::init( const SInitSettings & _settings ){
 
-    m_settings = _settings;
-    m_state.settings = & m_settings;
+    m_state.settings = _settings;
 
     if( _settings.datasources.empty() ){
         m_state.inited = true;
@@ -42,13 +41,12 @@ struct FunctorCompareDatasources {
 
 const DatasourceMixer::SState & DatasourceMixer::getState(){
 
-    if( m_settings.datasources.empty() ){
-        m_state.settings = & m_settings; // TODO: wtf ?
+    if( m_state.settings.datasources.empty() ){
         return m_state;
     }
 
-    if( 1 == m_settings.datasources.size() ){
-        PlayingDatasource * firstDatasource = m_settings.datasources[ 0 ];
+    if( 1 == m_state.settings.datasources.size() ){
+        PlayingDatasource * firstDatasource = m_state.settings.datasources[ 0 ];
         const PlayingDatasource::SState & state = firstDatasource->getState();
 
         m_state.globalDataRangeMillisec = state.globalTimeRangeMillisec;
@@ -56,12 +54,12 @@ const DatasourceMixer::SState & DatasourceMixer::getState(){
         m_state.globalStepUpdateMillisec = state.settings->updateStepMillisec;
     }
     else{
-        std::sort( m_settings.datasources.begin(), m_settings.datasources.end(), FunctorCompareDatasources() );
+        std::sort( m_state.settings.datasources.begin(), m_state.settings.datasources.end(), FunctorCompareDatasources() );
 
         int64_t totalUpdateStepMillisec = 0;
 
-        for( std::size_t i = 0; i < m_settings.datasources.size(); i++ ){
-            PlayingDatasource * datasource = m_settings.datasources[ i ];
+        for( std::size_t i = 0; i < m_state.settings.datasources.size(); i++ ){
+            PlayingDatasource * datasource = m_state.settings.datasources[ i ];
 
             const PlayingDatasource::SState & state = datasource->getState();
 
@@ -69,19 +67,18 @@ const DatasourceMixer::SState & DatasourceMixer::getState(){
                 m_state.globalDataRangeMillisec.first = state.globalTimeRangeMillisec.first;
             }
 
-            if( i == (m_settings.datasources.size() - 1) ){
+            if( i == (m_state.settings.datasources.size() - 1) ){
                 m_state.globalDataRangeMillisec.second = state.globalTimeRangeMillisec.second;
             }
 
             totalUpdateStepMillisec += state.settings->updateStepMillisec;
         }
 
-        m_state.globalStepUpdateMillisec = ( totalUpdateStepMillisec / m_settings.datasources.size() ); // avg
+        m_state.globalStepUpdateMillisec = ( totalUpdateStepMillisec / m_state.settings.datasources.size() ); // avg
         m_state.globalStepCount = ( m_state.globalDataRangeMillisec.second - m_state.globalDataRangeMillisec.first )
                                   / m_state.globalStepUpdateMillisec;
     }
 
-    m_state.settings = & m_settings; // TODO: wtf ?
     return m_state;
 }
 

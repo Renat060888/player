@@ -30,17 +30,32 @@ std::vector<IPlayerService *> DispatcherPlayerContoller::getPlayers(){
     return m_playerControllers;
 }
 
-IPlayerService * DispatcherPlayerContoller::getPlayer( const common_types::TPlayerId & _id ){
+IPlayerService * DispatcherPlayerContoller::getPlayer( const common_types::TPlayerId & _playerId ){
+
+
 
 }
 
-IPlayerService * DispatcherPlayerContoller::getPlayerByUser( const common_types::TUserId & _id ){
+IPlayerService * DispatcherPlayerContoller::getPlayerByUser( const common_types::TUserId & _userId ){
+
 
 }
 
-void DispatcherPlayerContoller::updatePlayerState( const common_types::SPlayerState & _state ){
+IPlayerService * DispatcherPlayerContoller::getPlayerByContext( const common_types::TContextId & _ctxId ){
+
+
 
 }
+
+void DispatcherPlayerContoller::updatePlayerState( const common_types::SPlayingServiceState & _state ){
+
+}
+
+
+
+
+
+
 
 
 

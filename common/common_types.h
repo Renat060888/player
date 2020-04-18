@@ -5,6 +5,7 @@
 #include <functional>
 
 #include <microservice_common/common/ms_common_types.h>
+#include <microservice_common/communication/network_interface.h>
 
 // ---------------------------------------------------------------------------
 // forwards
@@ -12,7 +13,7 @@
 class SourceManagerFacade;
 class AnalyticManagerFacade;
 class StorageEngineFacade;
-class SystemEnvironmentFacade;
+class SystemEnvironmentFacadePlayer;
 class CommunicationGatewayFacadePlayer;
 
 namespace common_types{
@@ -53,18 +54,27 @@ enum class EPlayerStatus {
 // simple ADT
 // ---------------------------------------------------------------------------
 
-
-
-
-
-
-
-struct SPlayerState {
-    TPlayerId playerId;
-    EPlayerStatus status;
+struct SPlayingDataSet {
+    int uniqueId;
+    char description[64];
+    bool real;
+    std::vector<TTimeRangeMillisec> dataRanges;
 };
 
+struct SPlayingInfo {
+    TTimeRangeMillisec globalRangeMillisec;
+    int64_t currentStepMillisec;
+    int64_t stepIntervalMillisec;
+    std::vector<SPlayingDataSet> playingData;
+};
 
+struct SPlayingServiceState {
+    TContextId ctxId;
+    TPlayerId playerId;
+    EPlayerStatus status;
+    SPlayingInfo info;
+    std::string lastError;
+};
 
 
 
@@ -88,14 +98,6 @@ struct SPlayerState {
 // ---------------------------------------------------------------------------
 // service interfaces
 // ---------------------------------------------------------------------------
-class IContextService {
-public:
-    virtual ~IContextService(){}
-
-    virtual bool open( int _contextId ) = 0;
-    virtual bool close( int _contextId ) = 0;
-};
-
 class IServiceInternalCommunication {
 public:
     virtual ~IServiceInternalCommunication(){}
@@ -127,31 +129,10 @@ public:
 };
 
 class IPlayerService {
-public:
-    struct SPlayingDataSet {
-        int uniqueId;
-        std::string description;
-        bool real;
-        std::vector<TTimeRangeMillisec> dataRanges;
-    };
-
-    struct SPlayingInfo {
-        TTimeRangeMillisec globalRangeMillisec;
-        int64_t currentStepMillisec;
-        int64_t stepIntervalMillisec;
-        std::vector<SPlayingDataSet> playingData;
-    };
-
-    struct SServiceState {
-        EPlayerStatus status;
-        std::string lastError;
-        TPlayerId playerId;
-        SPlayingInfo data;
-    };
-
+public:   
     virtual ~IPlayerService(){}
 
-    virtual const SServiceState & getServiceState() = 0;
+    virtual const SPlayingServiceState & getServiceState() = 0;
 
     virtual void start() = 0;
     virtual void pause() = 0;
@@ -182,7 +163,7 @@ struct SIncomingCommandServices : SIncomingCommandGlobalServices {
         , communicationGateway(nullptr)
     {}
 
-    SystemEnvironmentFacade * systemEnvironment;
+    SystemEnvironmentFacadePlayer * systemEnvironment;
     AnalyticManagerFacade * analyticManager;
     StorageEngineFacade * storageEngine;
     CommunicationGatewayFacadePlayer * communicationGateway;

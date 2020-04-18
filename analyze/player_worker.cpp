@@ -12,13 +12,13 @@ using namespace common_types;
 static constexpr const char * PRINT_HEADER = "Player:";
 
 #ifdef OBJREPR_LIBRARY_EXIST
-static inline objrepr::SpatialObject::TemporalState convertObjectStateToObjrepr( SDetectedObject::EState _state ){
+static inline objrepr::SpatialObject::TemporalState convertObjectStateToObjrepr( SPersistenceObj::EState _state ){
 
     switch( _state ){
-    case SDetectedObject::EState::ACTIVE : { return objrepr::SpatialObject::TemporalState::TS_Active; }
-    case SDetectedObject::EState::ABSENT : { return objrepr::SpatialObject::TemporalState::TS_Absent; }
-    case SDetectedObject::EState::DESTROYED : { return objrepr::SpatialObject::TemporalState::TS_Destroyed; }
-    case SDetectedObject::EState::UNDEFINED : { return objrepr::SpatialObject::TemporalState::TS_Unspecified; }
+    case SPersistenceObj::EState::ACTIVE : { return objrepr::SpatialObject::TemporalState::TS_Active; }
+    case SPersistenceObj::EState::ABSENT : { return objrepr::SpatialObject::TemporalState::TS_Absent; }
+    case SPersistenceObj::EState::DESTROYED : { return objrepr::SpatialObject::TemporalState::TS_Destroyed; }
+    case SPersistenceObj::EState::UNDEFINED : { return objrepr::SpatialObject::TemporalState::TS_Unspecified; }
     }
     return objrepr::SpatialObject::TemporalState::TS_Unspecified;
 }
@@ -59,8 +59,8 @@ bool PlayerWorker::init( const SInitSettings & _settings ){
     m_database = DatabaseManagerBase::getInstance();
 
     DatabaseManagerBase::SInitSettings settings;
-    settings.host = CONFIG_PARAMS.MONGO_DB_ADDRESS;
-    settings.databaseName = CONFIG_PARAMS.MONGO_DB_NAME;
+    settings.host = CONFIG_PARAMS.baseParams.MONGO_DB_ADDRESS;
+    settings.databaseName = CONFIG_PARAMS.baseParams.MONGO_DB_NAME;
 
     if( ! m_database->init(settings) ){
         m_state.playingStatus = EPlayerStatus::CRASHED;
@@ -180,7 +180,7 @@ bool PlayerWorker::updatePlayingData(){
 
     std::vector<PlayingDatasource *> oldDatasources;
     if( m_datasourcesMixer.getState().inited ){
-        oldDatasources = m_datasourcesMixer.getState().settings->datasources;
+        oldDatasources = m_datasourcesMixer.getState().settings.datasources;
     }
 
     // 1 level - mixer
@@ -345,7 +345,7 @@ inline void PlayerWorker::playObjects( const PlayingDatasource::TObjectsAtOneSte
 #ifdef OBJREPR_LIBRARY_EXIST
             playObj.objreprObject->changePoint( 0, 0, objrepr::GeoCoord(object.lonDeg, object.latDeg, 0) );
             playObj.objreprObject->setTemporalState( convertObjectStateToObjrepr(object.state) );
-            playObj.objreprObject->setOrientationHeading( object.heading );
+            playObj.objreprObject->setOrientationHeading( object.yawDeg );
 
             playObj.objreprObject->push();
 #endif
@@ -354,21 +354,19 @@ inline void PlayerWorker::playObjects( const PlayingDatasource::TObjectsAtOneSte
             SPlayableObject playObj;
 
 #ifdef OBJREPR_LIBRARY_EXIST
-            playObj.objreprObject = m_objectManager->loadObject( object.id );
+            playObj.objreprObject = m_objectManager->loadObject( object.objId );
             if( ! playObj.objreprObject ){
-                playObj.objreprObject = m_objectManager->getObject( object.id );
+                playObj.objreprObject = m_objectManager->getObject( object.objId );
 
                 if( ! playObj.objreprObject ){
-                    VS_LOG_ERROR << PRINT_HEADER << " such objrepr object not found: " << object.id << endl;
+                    VS_LOG_ERROR << PRINT_HEADER << " such objrepr object not found: " << object.objId << endl;
                     continue;
                 }
             }
 
-            // TODO: VS_LOG_CRITICAL is workable ?
-
             playObj.objreprObject->changePoint( 0, 0, objrepr::GeoCoord(object.lonDeg, object.latDeg, 0) );
             playObj.objreprObject->setTemporalState( convertObjectStateToObjrepr(object.state) );
-            playObj.objreprObject->setOrientationHeading( object.heading );
+            playObj.objreprObject->setOrientationHeading( object.yawDeg );
 
             playObj.objreprObject->push();
 #endif

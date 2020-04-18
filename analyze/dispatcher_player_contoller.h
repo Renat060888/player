@@ -34,12 +34,13 @@ public:
     void removeObserver( IPlayerDispatcherObserver * _observer );
 
     std::vector<common_types::IPlayerService *> getPlayers();
-    common_types::IPlayerService * getPlayer( const common_types::TPlayerId & _id );
-    common_types::IPlayerService * getPlayerByUser( const common_types::TUserId & _id );
+    common_types::IPlayerService * getPlayer( const common_types::TPlayerId & _playerId );
+    common_types::IPlayerService * getPlayerByUser( const common_types::TUserId & _userId );
+    common_types::IPlayerService * getPlayerByContext( const common_types::TContextId & _ctxId );
 
 
 private:
-    void updatePlayerState( const common_types::SPlayerState & _state );
+    void updatePlayerState( const common_types::SPlayingServiceState & _state );
 
     // data
     SState m_state;

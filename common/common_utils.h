@@ -34,6 +34,11 @@ static std::string printPlayingStatus( common_types::EPlayerStatus _stat ){
     return "shit";
 }
 
+static common_types::EPlayerStatus convertPlayingStatusFromStr( const std::string & _str ){
+
+
+}
+
 }
 
 #endif // COMMON_UTILS_H

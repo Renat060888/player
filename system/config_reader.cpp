@@ -11,9 +11,7 @@ ConfigReader::ConfigReader()
 
 bool ConfigReader::initDerive( const SIninSettings & _settings ){
 
-
-
-
+    m_parameters.baseParams = AConfigReader::m_parameters;
     return true;
 }
 

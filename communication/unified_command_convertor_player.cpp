@@ -1,4 +1,6 @@
 
+#include <cassert>
+
 #include "unified_command_convertor_player.h"
 
 using namespace std;

@@ -13,8 +13,9 @@ QMAKE_CXXFLAGS += -Wno-unused-variable
 
 # TODO: add defines to logger, system monitor, restbed webserver, database, etc...
 DEFINES += \
-    SWITCH_LOGGER_SIMPLE \
-#    OBJREPR_LIBRARY_EXIST \
+    SWITCH_LOGGER_ASTRA \
+#    SWITCH_LOGGER_SIMPLE \
+    OBJREPR_LIBRARY_EXIST \
 
 LIBS += \
     -lmongoc-1.0 \
@@ -64,7 +65,9 @@ SOURCES += \
     storage/storage_engine_facade.cpp \
     system/args_parser.cpp \
     system/config_reader.cpp \
-    system/path_locator.cpp
+    system/path_locator.cpp \
+    system/objrepr_bus_player.cpp \
+    system/system_environment_facade_player.cpp
 
 HEADERS += \
     analyze/analytic_manager_facade.h \
@@ -93,6 +96,8 @@ HEADERS += \
     storage/storage_engine_facade.h \
     system/args_parser.h \
     system/config_reader.h \
-    system/path_locator.h
+    system/path_locator.h \
+    system/objrepr_bus_player.h \
+    system/system_environment_facade_player.h
 
 
