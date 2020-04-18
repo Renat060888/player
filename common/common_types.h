@@ -128,10 +128,25 @@ public:
 
 class IPlayerService {
 public:
+    struct SPlayingDataSet {
+        int uniqueId;
+        std::string description;
+        bool real;
+        std::vector<TTimeRangeMillisec> dataRanges;
+    };
+
+    struct SPlayingInfo {
+        TTimeRangeMillisec globalRangeMillisec;
+        int64_t currentStepMillisec;
+        int64_t stepIntervalMillisec;
+        std::vector<SPlayingDataSet> playingData;
+    };
+
     struct SServiceState {
         EPlayerStatus status;
         std::string lastError;
         TPlayerId playerId;
+        SPlayingInfo data;
     };
 
     virtual ~IPlayerService(){}

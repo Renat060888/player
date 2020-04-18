@@ -101,7 +101,7 @@ static bool executeShellCommand(){
             VS_LOG_INFO << "============================ PLAYER AGENT AS DAEMON ========================" << endl;
         }
 
-        // launch
+        // launch agent
         {
             PlayerAgent::SInitSettings settings;
             PlayerAgent agent;
@@ -115,9 +115,11 @@ static bool executeShellCommand(){
     }
     if( ARGS_PARSER.isKeyExist(EPlayerArguments::SHELL_CMD_START_PLAYER_CONTROLLER) ){
 
-        // launch
+        // launch controller
         {
             PlayerController::SInitSettings settings;
+            settings.id = ARGS_PARSER.getVal(EPlayerArguments::PLAYER_CONTROLLER_ID);
+            settings.ctxId = std::stoi( ARGS_PARSER.getVal(EPlayerArguments::PLAYER_CONTROLLER_CTX_ID) );
             PlayerController controller;
             if( controller.init(settings) ){
                 controller.launch();

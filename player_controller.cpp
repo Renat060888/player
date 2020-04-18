@@ -1,4 +1,5 @@
 
+#include <jsoncpp/json/writer.h>
 #include <microservice_common/communication/amqp_client_c.h>
 #include <microservice_common/communication/amqp_controller.h>
 
@@ -7,14 +8,25 @@
 
 using namespace std;
 
+static constexpr int PING_INTERVAL_MILLISEC = 1000;
+
 PlayerController::PlayerController()
+    : m_trAsyncLaunch(nullptr)
+    , m_shutdownCalled(false)
+    , m_lastPingAtMillisec(0)
 {
 
 }
 
+PlayerController::~PlayerController(){
+
+    m_shutdownCalled = true;
+    common_utils::threadShutdown( m_trAsyncLaunch );
+}
+
 void PlayerController::callbackNetworkRequest( PEnvironmentRequest _request ){
 
-
+    // incoming commands for the player
 
 
 
@@ -23,15 +35,73 @@ void PlayerController::callbackNetworkRequest( PEnvironmentRequest _request ){
 
 bool PlayerController::init( const SInitSettings & _settings ){
 
+    // worker
+    PlayerWorker::SInitSettings workerSettings;
+    workerSettings.ctxId = _settings.ctxId;
+    if( ! m_worker.init(workerSettings) ){
+        return false;
+    }
 
+    // communication with agent
+    m_networkClient = connectToNetwork( _settings.id );
+    if( ! m_networkClient ){
+        return false;
+    }
 
+    PNetworkProvider provider = std::dynamic_pointer_cast<INetworkProvider>( m_networkClient );
+    provider->addObserver( this );
 
+    m_pingRequest = m_networkClient->getRequestInstance();
+
+    // async activity
+    m_trAsyncLaunch = new std::thread( & PlayerController::threadAsyncLaunch, this );
 
     return true;
 }
 
+void PlayerController::threadAsyncLaunch(){
+
+    while( ! m_shutdownCalled ){
+
+        launch();
+    }
+}
+
 void PlayerController::launch(){
 
+    if( (common_utils::getCurrentTimeMillisec() - m_lastPingAtMillisec) > PING_INTERVAL_MILLISEC ){
+        m_lastPingAtMillisec = common_utils::getCurrentTimeMillisec();
+
+        pingPlayerAgent();
+    }
+}
+
+std::string PlayerController::createPingMessage(){
+
+    Json::Value playerState;
+
+    Json::Value rootRecord;
+    rootRecord[ "cmd_type" ] = "service";
+    rootRecord[ "cmd_name" ] = "ping_from_player";
+    rootRecord[ "player_state" ] = playerState;
+    rootRecord[ "player_id" ] = m_state.settings.id;
+    rootRecord[ "error_occured" ] = false;
+
+    Json::FastWriter jsonWriter;
+    return jsonWriter.write( rootRecord );
+}
+
+void PlayerController::pingPlayerAgent(){
+
+    const string & pingMessage = createPingMessage();
+    m_pingRequest = m_networkClient->getRequestInstance();
+    m_pingRequest->sendMessageAsync( pingMessage );
+    return;
+
+    // TODO: do reusable "ping request"
+    if( m_pingRequest->isPerforming() ){
+        return;
+    }
 }
 
 PNetworkClient PlayerController::connectToNetwork( const common_types::TPlayerId & _id ){

@@ -103,3 +103,22 @@ void DispatcherUser::updateUserState( const common_types::SUserState & _state ){
 
     // TODO: watch for user is online
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
