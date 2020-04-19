@@ -7,11 +7,11 @@
 
 using namespace std;
 
-static string serializePlayerState( common_types::IPlayerService * _playerDipatcher ){
+static Json::Value serializePlayerState( common_types::IPlayerService * _player ){
 
     Json::Value rootRecord;
-    rootRecord[ "status" ] = common_utils::printPlayingStatus( _playerDipatcher->getServiceState().status );
-    rootRecord[ "last_error" ] = _playerDipatcher->getServiceState().lastError;
+    rootRecord[ "status" ] = common_utils::printPlayingStatus( _player->getServiceState().status );
+    rootRecord[ "last_error" ] = _player->getServiceState().lastError;
     rootRecord[ "..." ] = "...";
 
     // global range (millisec)
@@ -20,8 +20,7 @@ static string serializePlayerState( common_types::IPlayerService * _playerDipatc
     // simulate & real ranges (millisec)
     // ... ?
 
-    Json::FastWriter jsonWriter;
-    return jsonWriter.write(rootRecord);
+    return rootRecord;
 }
 
 CommandUserPing::CommandUserPing( common_types::SIncomingCommandServices * _services )
@@ -34,23 +33,36 @@ bool CommandUserPing::exec(){
 
     DispatcherUser * userDispatcher = (( common_types::SIncomingCommandServices * )m_services)->analyticManager->getUserDispatcher();
 
+    // authorization passed
     if( userDispatcher->isRegistered(m_userId) ){
         common_types::SUserState state;
         state.userId = m_userId;
         userDispatcher->updateUserState( state );
 
-        common_types::IPlayerService * playerDispatcher = (( common_types::SIncomingCommandServices * )m_services)->analyticManager->getPlayer( m_userId );
+        // player available ?
+        Json::Value playerState;
+        common_types::IPlayerService * player = (( common_types::SIncomingCommandServices * )m_services)->analyticManager->getPlayer( m_userId );
+        if( player ){
+            playerState = serializePlayerState( player );
+        }
+        else{
+            Json::Value unavailableState;
+            unavailableState["status"] = "UNAVAILABLE";
+            playerState = unavailableState;
+        }
 
+        // send
         Json::Value rootRecord;
         rootRecord[ "cmd_name" ] = "pong";
-        rootRecord[ "player_state" ] = serializePlayerState( playerDispatcher );
+        rootRecord[ "player_state" ] = playerState;
         rootRecord[ "error_occured" ] = false;
-        rootRecord[ "code" ] = "NO_CODE";
+        rootRecord[ "code" ] = "OK";
 
         Json::FastWriter jsonWriter;
         sendResponse( jsonWriter.write(rootRecord) );
         return true;
     }
+    // unknown user
     else{
         Json::Value unavailableState;
         unavailableState["status"] = "UNAVAILABLE";

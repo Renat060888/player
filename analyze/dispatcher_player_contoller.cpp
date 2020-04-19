@@ -12,6 +12,11 @@ DispatcherPlayerContoller::DispatcherPlayerContoller()
 bool DispatcherPlayerContoller::requestPlayer( const common_types::TUserId & _userId,
                                                const common_types::TContextId & _ctxId ){
 
+
+
+
+
+    return true;
 }
 
 void DispatcherPlayerContoller::releasePlayer( const common_types::TPlayerId & _id ){
@@ -38,7 +43,7 @@ IPlayerService * DispatcherPlayerContoller::getPlayer( const common_types::TPlay
 
 IPlayerService * DispatcherPlayerContoller::getPlayerByUser( const common_types::TUserId & _userId ){
 
-
+    return nullptr;
 }
 
 IPlayerService * DispatcherPlayerContoller::getPlayerByContext( const common_types::TContextId & _ctxId ){

@@ -16,10 +16,8 @@ bool CommandUserRegister::exec(){
 
     DispatcherUser * userDipatcher = (( common_types::SIncomingCommandServices * )m_services)->analyticManager->getUserDispatcher();
 
-
     const common_types::TUserId newId = userDipatcher->registerUser( m_userIpStr, m_userPid );
     if( newId != DispatcherUser::INVALID_USER_ID ){
-
         Json::Value rootRecord;
         rootRecord[ "user_id" ] = newId;
 

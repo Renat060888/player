@@ -1,8 +1,6 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-//#define OBJREPR_LIBRARY_EXIST
-
 #include <thread>
 #include <condition_variable>
 

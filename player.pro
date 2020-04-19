@@ -13,9 +13,9 @@ QMAKE_CXXFLAGS += -Wno-unused-variable
 
 # TODO: add defines to logger, system monitor, restbed webserver, database, etc...
 DEFINES += \
-    SWITCH_LOGGER_ASTRA \
-#    SWITCH_LOGGER_SIMPLE \
-    OBJREPR_LIBRARY_EXIST \
+#    SWITCH_LOGGER_ASTRA \
+    SWITCH_LOGGER_SIMPLE \
+#    OBJREPR_LIBRARY_EXIST \
 
 LIBS += \
     -lmongoc-1.0 \

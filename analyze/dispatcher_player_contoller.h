@@ -15,7 +15,6 @@ public:
     class IPlayerDispatcherObserver {
     public:
         virtual ~IPlayerDispatcherObserver(){}
-
         virtual void callbackPlayerControllerOnline( const common_types::TPlayerId & _id, bool _online ) = 0;
     };
 

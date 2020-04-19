@@ -77,6 +77,8 @@ const common_types::SUserState & DispatcherUser::getUser( const common_types::TU
 
 common_types::TUserId DispatcherUser::registerUser( std::string _userIp, common_types::TPid _userPid ){
 
+    // check for valid ip & pid
+
     // check for user with same ip/pid
     for( const SUserState & state : m_users ){
         if( state.userIp == _userIp && state.userPid == _userPid ){

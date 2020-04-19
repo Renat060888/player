@@ -83,7 +83,7 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
             cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
             cmd = cmd1;
         }
-        if( "ping_from_player" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+        else if( "ping_from_player" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
             PCommandPlayerControllerPing cmd1 = std::make_shared<CommandPlayerControllerPing>( & m_commandServices );
 
             const boost::property_tree::ptree & playerState = parsedJson.get_child( "player_state" );
