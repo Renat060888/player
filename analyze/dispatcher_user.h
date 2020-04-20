@@ -27,7 +27,7 @@ public:
     virtual bool isRegistered( const common_types::TUserId & _userId ) override;
     common_types::TUserId registerUser( std::string _userIp, common_types::TPid _userPid );
 
-    const common_types::SUserState & getUser( const common_types::TUserId & _userId );
+    common_types::PUserState getUser( const common_types::TUserId & _userId );
 
 
 private:
@@ -35,9 +35,9 @@ private:
 
     // data
     SState m_state;
-    std::vector<common_types::SUserState> m_users;
-    std::map<common_types::TUserId, common_types::SUserState> m_usersById;
-    std::map<common_types::TContextId, common_types::SUserState> m_usersByContextId;
+    std::vector<common_types::PUserState> m_users;
+    std::map<common_types::TUserId, common_types::PUserState> m_usersById;
+    std::map<common_types::TContextId, common_types::PUserState> m_usersByContextId;
     std::vector<common_types::IUserDispatcherObserver *> m_observers;
 
     // service

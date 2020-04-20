@@ -9,18 +9,25 @@ using namespace std;
 
 static Json::Value serializePlayerState( common_types::IPlayerService * _player ){
 
-    Json::Value rootRecord;
-    rootRecord[ "status" ] = common_utils::printPlayingStatus( _player->getServiceState().status );
-    rootRecord[ "last_error" ] = _player->getServiceState().lastError;
-    rootRecord[ "..." ] = "...";
+    if( _player ){
+        Json::Value rootRecord;
+        rootRecord[ "status" ] = common_utils::printPlayingStatus( _player->getServiceState().status );
+        rootRecord[ "last_error" ] = _player->getServiceState().lastError;
+        rootRecord[ "..." ] = "...";
 
-    // global range (millisec)
-    // current step (at millisec)
-    // step interval (millisec)
-    // simulate & real ranges (millisec)
-    // ... ?
+        // global range (millisec)
+        // current step (at millisec)
+        // step interval (millisec)
+        // simulate & real ranges (millisec)
+        // ... ?
 
-    return rootRecord;
+        return rootRecord;
+    }
+    else{
+        Json::Value unavailableState;
+        unavailableState["status"] = "UNAVAILABLE";
+        return unavailableState;
+    }
 }
 
 CommandUserPing::CommandUserPing( common_types::SIncomingCommandServices * _services )
@@ -39,22 +46,11 @@ bool CommandUserPing::exec(){
         state.userId = m_userId;
         userDispatcher->updateUserState( state );
 
-        // player available ?
-        Json::Value playerState;
         common_types::IPlayerService * player = (( common_types::SIncomingCommandServices * )m_services)->analyticManager->getPlayer( m_userId );
-        if( player ){
-            playerState = serializePlayerState( player );
-        }
-        else{
-            Json::Value unavailableState;
-            unavailableState["status"] = "UNAVAILABLE";
-            playerState = unavailableState;
-        }
 
-        // send
         Json::Value rootRecord;
         rootRecord[ "cmd_name" ] = "pong";
-        rootRecord[ "player_state" ] = playerState;
+        rootRecord[ "player_state" ] = serializePlayerState( player );
         rootRecord[ "error_occured" ] = false;
         rootRecord[ "code" ] = "OK";
 
