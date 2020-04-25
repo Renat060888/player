@@ -1,0 +1,142 @@
+syntax = "proto3";
+package protocol_player_agent_to_controller;
+
+// hand-made RPC :)
+
+// ----------------------------------------------------------------------------------
+// PAYLOAD-TYPEDEFS
+// ----------------------------------------------------------------------------------
+
+
+
+
+// ----------------------------------------------------------------------------------
+// ROUTE-TYPEDEFS
+// ----------------------------------------------------------------------------------
+message MessageHeader {        
+    string module_name = 1;
+    string last_error = 2;   
+}
+
+enum EPlayerAgentCommandType {
+	PACT_PLAY_START = 0;
+	PACT_PLAY_PAUSE = 1;
+	PACT_PLAY_STOP = 2;	
+	PACT_PLAY_STEP = 3;
+	PACT_PLAY_LOOP = 4;
+	PACT_PLAY_REVERSE = 5;
+	PACT_PLAY_SPEED = 6;
+	PACT_PLAY_FROM_POS = 7;
+	PACT_SET_RANGE = 8;	
+    PACT_PLAYER_DESTROY = 9;		
+    PACT_UNDEFINED = 99;
+}
+
+enum EPlayerControllerCommandType {
+	PCCT_PING = 0;
+    PCCT_UNDEFINED = 99;
+}
+
+
+// ----------------------------------------------------------------------------------
+// PLAYER AGENT
+// ----------------------------------------------------------------------------------
+message MessagePlayerAgent {
+	MessageHeader header = 1;
+	EPlayerAgentCommandType cmd_type = 2;
+		
+	MessageRequestPlayStart msg_play_start = 3;
+	MessageRequestPlayPause msg_play_pause = 4;
+	MessageRequestPlayStop msg_play_stop = 5;
+	MessageRequestPlayStep msg_play_step = 6;
+	MessageRequestPlayLoop msg_play_loop = 7;
+	MessageRequestPlayReverse msg_play_reverse = 8;
+	MessageRequestPlaySpeed msg_play_speed = 9;
+	MessageRequestPlayFromPos msg_play_from_pos = 10;
+	MessageRequestSetRange msg_set_range = 11;
+	
+	MessageResponsePlayerDestroy msg_player_destroy = 12;
+}
+
+message MessageRequestPlayStart {	
+	// void
+}
+
+message MessageRequestPlayPause {	
+	// void
+}
+
+message MessageRequestPlayStop {	
+	// void
+}
+
+message MessageRequestPlayStep {	
+	bool forward = 1;
+}
+
+message MessageRequestPlayLoop {	
+	bool loop = 1;
+}
+
+message MessageRequestPlayReverse {	
+	bool reverse = 1;
+}
+
+message MessageRequestPlaySpeed {	
+	bool normalize = 1;
+	bool increase = 2;
+}
+
+message MessageRequestPlayFromPos {	
+	int64 positionMillisec = 1;
+}
+
+message MessageRequestSetRange {	
+	int64 leftPlayingRangeMillisec = 1;
+	int64 rightPlayingRangeMillisec = 2;
+	bool resetRange = 3;
+}
+
+message MessageResponsePlayerDestroy {
+    // void
+}
+
+
+// ----------------------------------------------------------------------------------
+// PLAYER CONTROLLER
+// ----------------------------------------------------------------------------------
+message MessagePlayerController {
+	MessageHeader header = 1;
+
+	MessageResponsePlayStart msg_play_start = 2;
+	MessageResponsePlayStop msg_play_stop = 3;
+	
+}
+
+message MessageResponsePlayStart {	
+	// void
+}
+
+message MessageResponsePlayStop {	
+	// void
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// MAIN
+// ----------------------------------------------------------------------------------
+enum EWho {	
+	W_PLAYER_AGENT = 0;    
+    W_PLAYER_CONTROLLER = 1;    
+    W_UNDEFINED = 2;
+}
+
+message ProtobufPlayerAgentToController{
+    EWho sender = 1;
+            
+    MessagePlayerAgent msg_player_agent = 2;    
+    MessagePlayerController msg_player_controller = 3;    
+}
+
+

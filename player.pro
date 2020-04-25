@@ -46,6 +46,16 @@ SOURCES += \
     analyze/dispatcher_player_contoller.cpp \
     analyze/dispatcher_user.cpp \
     analyze/proxy_player_controller.cpp \
+    communication/commands/cmd_player_from_pos.cpp \
+    communication/commands/cmd_player_live.cpp \
+    communication/commands/cmd_player_loop.cpp \
+    communication/commands/cmd_player_pause.cpp \
+    communication/commands/cmd_player_reverse.cpp \
+    communication/commands/cmd_player_speed.cpp \
+    communication/commands/cmd_player_start.cpp \
+    communication/commands/cmd_player_step.cpp \
+    communication/commands/cmd_player_stop.cpp \
+    communication/protocols/protocol_player_agent_to_controller.pb.cpp \
     player_controller.cpp \
     analyze/player_iterator.cpp \
     analyze/player_worker.cpp \
@@ -75,6 +85,16 @@ HEADERS += \
     analyze/dispatcher_player_contoller.h \
     analyze/dispatcher_user.h \
     analyze/proxy_player_controller.h \
+    communication/commands/cmd_player_from_pos.h \
+    communication/commands/cmd_player_live.h \
+    communication/commands/cmd_player_loop.h \
+    communication/commands/cmd_player_pause.h \
+    communication/commands/cmd_player_reverse.h \
+    communication/commands/cmd_player_speed.h \
+    communication/commands/cmd_player_start.h \
+    communication/commands/cmd_player_step.h \
+    communication/commands/cmd_player_stop.h \
+    communication/protocols/protocol_player_agent_to_controller.pb.h \
     player_controller.h \
     analyze/player_iterator.h \
     analyze/player_worker.h \

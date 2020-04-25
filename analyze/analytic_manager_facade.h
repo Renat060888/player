@@ -10,7 +10,8 @@ class AnalyticManagerFacade
 {
 public:
     struct SServiceLocator {
-
+        common_types::IServiceInternalCommunication * serviceInternalCommunication;
+        common_types::IServiceExternalCommunication * serviceExternalCommunication;
     };
 
     struct SInitSettings {
@@ -30,6 +31,9 @@ public:
     void shutdown();
 
     DispatcherUser * getUserDispatcher();
+    DispatcherPlayerContoller * getPlayerDispatcher();
+
+    // TODO: deprecated ?
     common_types::IPlayerService * getPlayer( const common_types::TUserId & _id );
 
 
@@ -44,7 +48,6 @@ private:
     DispatcherUser m_userDispatcher;
     DispatcherPlayerContoller m_playerControllerDispatcher;
     std::thread * m_threadMaintenance;
-
 };
 
 #endif // ANALYTIC_MANAGER_FACADE_H

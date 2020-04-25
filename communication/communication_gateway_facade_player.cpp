@@ -91,13 +91,13 @@ PNetworkClient CommunicationGatewayFacadePlayer::getPlayerWorkerCommunicator( co
         return iter->second;
     }
 
-    // core -> node agent
+    // player agent -> player worker
     SAmqpRouteParameters route;
-    route.predatorExchangePointName = "dss_dx_core";
-    route.predatorQueueName = "dss_q_core_mailbox";
-    route.predatorRoutingKeyName = "dss_rk_to_core";
-    route.targetExchangePointName = "dss_dx_player_workers";
-    route.targetRoutingKeyName = "dss_rk_to_player_worker_" + _uniqueId;
+    route.predatorExchangePointName = "player_dx_agent";
+    route.predatorQueueName = "player_q_agent_mailbox";
+    route.predatorRoutingKeyName = "player_rk_to_agent";
+    route.targetExchangePointName = "player_dx_workers";
+    route.targetRoutingKeyName = "player_rk_to_worker_" + _uniqueId;
 
     PNetworkClient connection = CommunicationGatewayFacade::getInitialAmqpConnection();
     PAmqpClient amqpClient = std::dynamic_pointer_cast<AmqpClient>( connection );

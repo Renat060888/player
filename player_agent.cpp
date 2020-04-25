@@ -81,7 +81,8 @@ bool PlayerAgent::init( const SInitSettings & _settings ){
     }
 
     AnalyticManagerFacade::SInitSettings settings4;
-    settings4.services;
+    settings4.services.serviceInternalCommunication = m_communicateGateway->serviceForInternalCommunication();
+    settings4.services.serviceExternalCommunication = m_communicateGateway->serviceForExternalCommunication();
     if( ! m_analyticManager->init(settings4) ){
         return false;
     }

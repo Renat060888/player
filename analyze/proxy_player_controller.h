@@ -1,6 +1,7 @@
 #ifndef PLAYER_CONTROLLER_MIRROR_H
 #define PLAYER_CONTROLLER_MIRROR_H
 
+#include "communication/protocols/protocol_player_agent_to_controller.pb.h"
 #include <microservice_common/communication/network_interface.h>
 
 #include "common/common_types.h"
@@ -52,7 +53,7 @@ private:
 
 
     // service
-
+    protocol_player_agent_to_controller::ProtobufPlayerAgentToController m_protobufAgentToController;
 
 
 };

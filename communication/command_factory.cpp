@@ -12,6 +12,15 @@
 #include "commands/cmd_context_open.h"
 #include "commands/cmd_context_close.h"
 #include "commands/cmd_player_controller_ping.h"
+#include "commands/cmd_player_from_pos.h"
+#include "commands/cmd_player_live.h"
+#include "commands/cmd_player_loop.h"
+#include "commands/cmd_player_pause.h"
+#include "commands/cmd_player_reverse.h"
+#include "commands/cmd_player_speed.h"
+#include "commands/cmd_player_start.h"
+#include "commands/cmd_player_step.h"
+#include "commands/cmd_player_stop.h"
 #include "common/common_vars.h"
 
 using namespace std;
@@ -125,6 +134,68 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
 
 
 
+    }
+    // -------------------------------------------------------------------------------------
+    // analyze
+    // -------------------------------------------------------------------------------------
+    else if( "analyze" == parsedJson.get<string>(common_vars::cmd::COMMAND_TYPE) ){
+        if( "play_from_pos" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerFromPos cmd1 = std::make_shared<CommandPlayerFromPos>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd1->m_positionMillisec = parsedJson.get<int64_t>("target_pos_ms");
+            cmd = cmd1;
+        }
+        else if( "play_loop" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerLoop cmd1 = std::make_shared<CommandPlayerLoop>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd1->loop = parsedJson.get<bool>("loop");
+            cmd = cmd1;
+        }
+        else if( "play_pause" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerPause cmd1 = std::make_shared<CommandPlayerPause>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd = cmd1;
+        }
+        else if( "play_live" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerLive cmd1 = std::make_shared<CommandPlayerLive>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd1->live = parsedJson.get<bool>("live");
+            cmd = cmd1;
+        }
+        else if( "play_reverse" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerReverse cmd1 = std::make_shared<CommandPlayerReverse>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd1->reverse = parsedJson.get<bool>("reverse");
+            cmd = cmd1;
+        }
+        else if( "play_with_speed" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerSpeed cmd1 = std::make_shared<CommandPlayerSpeed>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd1->increase = parsedJson.get<bool>("increase");
+            cmd1->normalize = parsedJson.get<bool>("normalize");
+            cmd = cmd1;
+        }
+        else if( "play_start" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerStart cmd1 = std::make_shared<CommandPlayerStart>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd = cmd1;
+        }
+        else if( "play_step" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerStep cmd1 = std::make_shared<CommandPlayerStep>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd1->stepForward = parsedJson.get<bool>("forward");
+            cmd = cmd1;
+        }
+        else if( "play_stop" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
+            PCommandPlayerStop cmd1 = std::make_shared<CommandPlayerStop>( & m_commandServices );
+            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd = cmd1;
+        }
+        else{
+            VS_LOG_WARN << PRINT_HEADER << " unknown command name [" << parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) << "]" << endl;
+            sendFailToExternal( _request, "I don't know such command name of 'analyze' command type (-_-)" );
+            return nullptr;
+        }
     }
     else{
         VS_LOG_WARN << PRINT_HEADER << " unknown command type [" << parsedJson.get<string>(common_vars::cmd::COMMAND_TYPE) << "]" << endl;

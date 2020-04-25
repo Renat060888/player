@@ -1,9 +1,8 @@
 
 #include <jsoncpp/json/writer.h>
 
-#include "system/objrepr_bus_player.h"
 #include "analyze/analytic_manager_facade.h"
-#include "cmd_context_open.h"
+#include "cmd_player_pause.h"
 
 using namespace std;
 using namespace common_types;
@@ -27,22 +26,23 @@ static bool userHasPermission( const TUserId & _userId, common_types::SIncomingC
     }
 }
 
-CommandContextOpen::CommandContextOpen( SIncomingCommandServices * _services )
+CommandPlayerPause::CommandPlayerPause( SIncomingCommandServices * _services )
     : ICommandExternal(_services)
 {
 
 }
 
-bool CommandContextOpen::exec(){
+bool CommandPlayerPause::exec(){
 
     string errMsg;
     if( userHasPermission(m_userId, (SIncomingCommandServices *)m_services, errMsg) ){
-        const TContextId ctxId = OBJREPR_BUS.getContextIdByName( m_contextName );
-
         DispatcherPlayerContoller * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
-        if( playerDipatcher->requestPlayer(m_userId, ctxId) ){
+        IPlayerService * player = playerDipatcher->getPlayerByUser( m_userId );
+        if( player ){
+            player->pause();
+
             Json::Value rootRecord;
-            rootRecord[ "cmd_name" ] = "ctx_open";
+            rootRecord[ "cmd_name" ] = "player_pause";
             rootRecord[ "error_occured" ] = false;
             rootRecord[ "code" ] = "OK";
 
@@ -52,7 +52,7 @@ bool CommandContextOpen::exec(){
         }
         else{
             Json::Value rootRecord;
-            rootRecord[ "cmd_name" ] = "ctx_open";
+            rootRecord[ "cmd_name" ] = "player_pause";
             rootRecord[ "error_occured" ] = true;
             rootRecord[ "code" ] = playerDipatcher->getState().lastError;
 

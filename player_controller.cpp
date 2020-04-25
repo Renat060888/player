@@ -1,5 +1,6 @@
 
 #include <jsoncpp/json/writer.h>
+#include <microservice_common/system/logger.h>
 #include <microservice_common/communication/amqp_client_c.h>
 #include <microservice_common/communication/amqp_controller.h>
 
@@ -8,7 +9,8 @@
 
 using namespace std;
 
-static constexpr int PING_INTERVAL_MILLISEC = 1000;
+static constexpr int PING_TO_AGENT_INTERVAL_MILLISEC = 1000;
+static constexpr const char * PRINT_HEADER = "PlayerController:";
 
 PlayerController::PlayerController()
     : m_trAsyncLaunch(nullptr)
@@ -26,10 +28,109 @@ PlayerController::~PlayerController(){
 
 void PlayerController::callbackNetworkRequest( PEnvironmentRequest _request ){
 
-    // incoming commands for the player
+    if( m_protobufAgentToController.ParseFromString(_request->getIncomingMessage()) ){
+        const protocol_player_agent_to_controller::MessagePlayerAgent & msgAgent = m_protobufAgentToController.msg_player_agent();
+        switch( msgAgent.cmd_type() ){
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_START : {
+            processMsgStart( msgAgent );
+            break;
+        }
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_PAUSE : {
+            processMsgPause( msgAgent );
+            break;
+        }
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_STOP : {
+            processMsgStop( msgAgent );
+            break;
+        }
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_REVERSE : {
+            processMsgSwitchReverseMode( msgAgent );
+            break;
+        }
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_LOOP : {
+            processMsgSwitchLoopMode( msgAgent );
+            break;
+        }
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_STEP : {
+            processMsgStepForward( msgAgent );
+            break;
+        }
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_FROM_POS : {
+            processMsgPlayFromPosition( msgAgent );
+            break;
+        }
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_SPEED : {
+            processMsgIncreasePlayingSpeed( msgAgent );
+            break;
+        }
+        default : {
+            VS_LOG_ERROR << PRINT_HEADER
+                         << " unknown player command from Agent, reason: " << m_protobufAgentToController.DebugString()
+                         << endl;
+        }
+        }
+    }
+    else{
+        VS_LOG_ERROR << PRINT_HEADER
+                     << " protobuf parse failed, reason: " << m_protobufAgentToController.DebugString()
+                     << endl;
+    }
+}
+
+void PlayerController::processMsgStart( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+    m_worker.start();
+}
+
+void PlayerController::processMsgPause( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+    m_worker.pause();
+}
+
+void PlayerController::processMsgStop( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+    m_worker.stop();
+}
+
+bool PlayerController::processMsgStepForward( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+    m_worker.stepForward();
+}
+
+bool PlayerController::processMsgStepBackward( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+}
+
+bool PlayerController::processMsgSetRange( const common_types::TTimeRangeMillisec & _range ){
+
+}
+
+void PlayerController::processMsgSwitchReverseMode( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+    m_worker.switchReverseMode( true );
+}
+
+void PlayerController::processMsgSwitchLoopMode( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+    m_worker.switchLoopMode( true );
+}
+
+bool PlayerController::processMsgPlayFromPosition( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+    m_worker.playFromPosition( 999999999LL );
+}
+
+bool PlayerController::processMsgIncreasePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
 
+    m_worker.increasePlayingSpeed();
+}
 
+bool PlayerController::processMsgDecreasePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
+
+}
+
+void PlayerController::processMsgNormalizePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
 }
 
@@ -54,7 +155,10 @@ bool PlayerController::init( const SInitSettings & _settings ){
     m_pingRequest = m_networkClient->getRequestInstance();
 
     // async activity
-    m_trAsyncLaunch = new std::thread( & PlayerController::threadAsyncLaunch, this );
+    if( _settings.async ){
+        m_trAsyncLaunch = new std::thread( & PlayerController::threadAsyncLaunch, this );
+    }
+
 
     return true;
 }
@@ -64,12 +168,14 @@ void PlayerController::threadAsyncLaunch(){
     while( ! m_shutdownCalled ){
 
         launch();
+
+        std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
 }
 
 void PlayerController::launch(){
 
-    if( (common_utils::getCurrentTimeMillisec() - m_lastPingAtMillisec) > PING_INTERVAL_MILLISEC ){
+    if( (common_utils::getCurrentTimeMillisec() - m_lastPingAtMillisec) > PING_TO_AGENT_INTERVAL_MILLISEC ){
         m_lastPingAtMillisec = common_utils::getCurrentTimeMillisec();
 
         pingPlayerAgent();

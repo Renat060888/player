@@ -6,6 +6,7 @@
 #include "common/common_types.h"
 #include "proxy_player_controller.h"
 
+// TODO: temp ( must be in separate process )
 #include "player_controller.h"
 
 class DispatcherPlayerContoller
@@ -18,13 +19,27 @@ public:
         virtual void callbackPlayerControllerOnline( const common_types::TPlayerId & _id, bool _online ) = 0;
     };
 
-    struct SState {
+    struct SInitSettings {
+        common_types::IServiceInternalCommunication * serviceInternalCommunication;
+    };
 
+    struct SState {
+        SInitSettings settings;
         std::string lastError;
     };
 
+    struct SPlayerDescriptor {
+        common_types::TPlayerId id;
+        common_types::TUserId userId;
+        int64_t lastPongMillisec;
+        common_types::IPlayerService * player;
+    };
+
     DispatcherPlayerContoller();
+    bool init( const SInitSettings & _settings );
     const SState & getState(){ return m_state; }
+
+    void runClock();
 
     bool requestPlayer( const common_types::TUserId & _userId, const common_types::TContextId & _ctxId );
     void releasePlayer( const common_types::TPlayerId & _id );
@@ -43,11 +58,14 @@ private:
 
     // data
     SState m_state;
-    std::vector<common_types::IPlayerService *> m_playerControllers;
+    std::vector<common_types::IPlayerService *> m_players;
     std::map<common_types::TPlayerId, common_types::IPlayerService *> m_playersById;
     std::map<common_types::TContextId, common_types::IPlayerService *> m_playersByContextId;
     std::map<common_types::TUserId, common_types::IPlayerService *> m_playersByUserId;
     std::vector<IPlayerDispatcherObserver *> m_observers;
+    // ( monitoring )
+    std::map<common_types::TPlayerId, SPlayerDescriptor> m_monitoringDescriptors;
+    std::vector<SPlayerDescriptor *> m_monitoringDescriptors2;
 
     // TODO: temp ( must be in separate process )
     std::vector<PlayerController *> m_realPlayerControllersForTest;

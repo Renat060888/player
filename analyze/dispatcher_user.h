@@ -13,7 +13,7 @@ public:
 
     struct SState {
 
-        std::string m_lastError;
+        std::string lastError;
     };
 
     DispatcherUser();

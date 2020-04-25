@@ -74,7 +74,14 @@ bool DispatcherUser::isRegistered( const common_types::TUserId & _userId ){
 
 PUserState DispatcherUser::getUser( const common_types::TUserId & _userId ){
 
-
+    auto iter = m_usersById.find( _userId );
+    if( iter != m_usersById.end() ){
+        return iter->second;
+    }
+    else{
+        m_state.lastError = "such user not found: " + _userId;
+        return nullptr;
+    }
 }
 
 common_types::TUserId DispatcherUser::registerUser( std::string _userIp, common_types::TPid _userPid ){
@@ -105,7 +112,12 @@ common_types::TUserId DispatcherUser::registerUser( std::string _userIp, common_
 
 void DispatcherUser::updateUserState( const common_types::SUserState & _state ){
 
-    // TODO: watch for user is online
+    auto iter = m_usersById.find( _state.userId );
+    if( iter != m_usersById.end() ){
+        PUserState user = iter->second;
+
+        user->lastPingMillisec = common_utils::getCurrentTimeMillisec();
+    }
 }
 
 

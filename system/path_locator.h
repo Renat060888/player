@@ -16,6 +16,7 @@ public:
     const std::string getUniqueLockFile();
     const std::string getShellImitationDomainSocket();
 
+
 private:
     PathLocator();
     ~PathLocator();

@@ -38,6 +38,7 @@ void AnalyticManagerFacade::threadMaintenance(){
     while( ! shutdownCalled ){
 
         m_userDispatcher.runClock();
+        m_playerControllerDispatcher.runClock();
 
         std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
@@ -52,6 +53,10 @@ common_types::IPlayerService * AnalyticManagerFacade::getPlayer( const common_ty
     }
 
     return player;
+}
+
+DispatcherPlayerContoller * AnalyticManagerFacade::getPlayerDispatcher(){
+    return & m_playerControllerDispatcher;
 }
 
 DispatcherUser * AnalyticManagerFacade::getUserDispatcher(){
