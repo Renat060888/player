@@ -100,10 +100,9 @@ PNetworkClient CommunicationGatewayFacadePlayer::getPlayerWorkerCommunicator( co
     route.targetRoutingKeyName = "player_rk_to_worker_" + _uniqueId;
 
     PNetworkClient connection = CommunicationGatewayFacade::getInitialAmqpConnection();
-    PAmqpClient amqpClient = std::dynamic_pointer_cast<AmqpClient>( connection );
 
     AmqpController::SInitSettings settings;
-    settings.client = amqpClient;
+    settings.client = connection;
     settings.route = route;
 
     PAmqpController controller = std::make_shared<AmqpController>( CommunicationGatewayFacade::getConnectionId() );

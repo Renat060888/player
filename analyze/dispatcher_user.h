@@ -3,6 +3,8 @@
 
 #include <map>
 
+#include <microservice_common/system/wal.h>
+
 #include "common/common_types.h"
 
 class DispatcherUser : public common_types::IServiceUserAuthorization
@@ -11,14 +13,20 @@ class DispatcherUser : public common_types::IServiceUserAuthorization
 public:
     static const common_types::TUserId INVALID_USER_ID;
 
-    struct SState {
+    struct SInitSettings {
+        WriteAheadLogger * serviceWriteAheadLogger;
+    };
 
+    struct SState {
+        SInitSettings settings;
         std::string lastError;
     };
 
     DispatcherUser();
-    const SState & getState(){ return m_state; }
+    ~DispatcherUser();
 
+    bool init( const SInitSettings & _settings );
+    const SState & getState(){ return m_state; }
     void runClock();
 
     virtual void addObserver( common_types::IUserDispatcherObserver * _observer ) override;
@@ -32,6 +40,8 @@ public:
 
 private:
     void updateUserState( const common_types::SUserState & _state );
+
+    void loadPreviousSessionActiveUsers();
 
     // data
     SState m_state;

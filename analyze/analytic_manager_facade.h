@@ -12,6 +12,7 @@ public:
     struct SServiceLocator {
         common_types::IServiceInternalCommunication * serviceInternalCommunication;
         common_types::IServiceExternalCommunication * serviceExternalCommunication;
+        SystemEnvironmentFacadePlayer * systemEnvironment;
     };
 
     struct SInitSettings {

@@ -4,6 +4,7 @@
 #include <microservice_common/communication/amqp_client_c.h>
 #include <microservice_common/communication/amqp_controller.h>
 
+#include "common/common_utils.h"
 #include "system/config_reader.h"
 #include "player_controller.h"
 
@@ -63,6 +64,10 @@ void PlayerController::callbackNetworkRequest( PEnvironmentRequest _request ){
             processMsgIncreasePlayingSpeed( msgAgent );
             break;
         }
+        case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_SET_RANGE : {
+            processMsgSetRange( msgAgent );
+            break;
+        }
         default : {
             VS_LOG_ERROR << PRINT_HEADER
                          << " unknown player command from Agent, reason: " << m_protobufAgentToController.DebugString()
@@ -94,14 +99,15 @@ void PlayerController::processMsgStop( const protocol_player_agent_to_controller
 
 bool PlayerController::processMsgStepForward( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
-    m_worker.stepForward();
+    return m_worker.stepForward();
 }
 
 bool PlayerController::processMsgStepBackward( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
+    return m_worker.stepBackward();
 }
 
-bool PlayerController::processMsgSetRange( const common_types::TTimeRangeMillisec & _range ){
+bool PlayerController::processMsgSetRange( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
 }
 
@@ -117,21 +123,22 @@ void PlayerController::processMsgSwitchLoopMode( const protocol_player_agent_to_
 
 bool PlayerController::processMsgPlayFromPosition( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
-    m_worker.playFromPosition( 999999999LL );
+    return m_worker.playFromPosition( 999999999LL );
 }
 
 bool PlayerController::processMsgIncreasePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
-
-    m_worker.increasePlayingSpeed();
+    return m_worker.increasePlayingSpeed();
 }
 
 bool PlayerController::processMsgDecreasePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
+    return m_worker.increasePlayingSpeed();
 }
 
 void PlayerController::processMsgNormalizePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
+    m_worker.normalizePlayingSpeed();
 }
 
 bool PlayerController::init( const SInitSettings & _settings ){
@@ -159,7 +166,6 @@ bool PlayerController::init( const SInitSettings & _settings ){
         m_trAsyncLaunch = new std::thread( & PlayerController::threadAsyncLaunch, this );
     }
 
-
     return true;
 }
 
@@ -184,19 +190,49 @@ void PlayerController::launch(){
 
 std::string PlayerController::createPingMessage(){
 
-    m_worker.getState();
+    PlayerWorker::SState * state = (PlayerWorker::SState *)m_worker.getState();
 
+    // player state
     Json::Value playerState;
+    playerState["step_interval"] = (long long)state->playIterator->getState().m_updateGenerationMillisec;
+    playerState["current_step"] = (long long)state->playIterator->getState().m_currentPlayStep;
+    playerState["global_range_left"] = (long long)state->playIterator->getState().m_globalTimeRangeMillisec.first;
+    playerState["global_range_right"] = (long long)state->playIterator->getState().m_globalTimeRangeMillisec.second;
 
+    Json::Value datasetsRecord;
+    const DatasourceMixer::SState & mixerState = state->mixer->getState();
+    for( PlayingDatasource * datasrc : mixerState.settings.datasources ){
+
+        Json::Value rangesRecord;
+        for( const PlayingDatasource::SBeacon::SDataBlock * block : datasrc->getState().payloadDataRangesInfo ){
+            Json::Value rangeRecord;
+            rangeRecord["range_left"] = (long long)block->timestampRangeMillisec.first;
+            rangeRecord["range_right"] = (long long)block->timestampRangeMillisec.second;
+            rangesRecord.append( rangeRecord );
+        }
+
+        Json::Value dsRecord;
+        dsRecord["unique_id"] = (long long)datasrc->getState().settings->persistenceSetId;
+        dsRecord["real"] = true;
+        dsRecord["ranges"] = rangesRecord;
+        datasetsRecord.append( dsRecord );
+    }
+    playerState["datasets"] = datasetsRecord;
+
+    // general message
     Json::Value rootRecord;
     rootRecord[ "cmd_type" ] = "service";
     rootRecord[ "cmd_name" ] = "ping_from_player";
     rootRecord[ "player_state" ] = playerState;
+    rootRecord[ "status" ] = common_utils::printPlayingStatus( state->playingStatus );
     rootRecord[ "player_id" ] = m_state.settings.id;
     rootRecord[ "error_occured" ] = false;
     rootRecord[ "error_str" ] = "HOLY_SHIT";
 
     Json::FastWriter jsonWriter;
+
+    cout << "state: " << jsonWriter.write( rootRecord ) << endl;
+
     return jsonWriter.write( rootRecord );
 }
 

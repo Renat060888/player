@@ -40,7 +40,7 @@ bool CommandContextOpen::exec(){
         const TContextId ctxId = OBJREPR_BUS.getContextIdByName( m_contextName );
 
         DispatcherPlayerContoller * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
-        if( playerDipatcher->requestPlayer(m_userId, ctxId) ){
+        if( playerDipatcher->requestPlayer(m_userId, 777) ){
             Json::Value rootRecord;
             rootRecord[ "cmd_name" ] = "ctx_open";
             rootRecord[ "error_occured" ] = false;

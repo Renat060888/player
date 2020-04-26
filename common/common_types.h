@@ -54,6 +54,9 @@ enum class EPlayerStatus {
 // simple ADT
 // ---------------------------------------------------------------------------
 
+// -------------------------------------------------------------
+// NOTE: must be equal to the same structures in 'DssClient'
+// -------------------------------------------------------------
 struct SPlayingDataSet {
     int uniqueId;
     char description[64];
@@ -75,6 +78,9 @@ struct SPlayingServiceState {
     SPlayingInfo info;
     std::string lastError;
 };
+// -------------------------------------------------------------
+// NOTE: must be equal to the same structures in 'DssClient'
+// -------------------------------------------------------------
 
 
 

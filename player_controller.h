@@ -27,6 +27,7 @@ public:
     ~PlayerController();
 
     bool init( const SInitSettings & _settings );
+    const SState & getState(){ return m_state; }
     void launch();
 
 

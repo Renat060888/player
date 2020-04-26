@@ -1,4 +1,6 @@
 
+#include "system/system_environment_facade_player.h"
+
 #include "analytic_manager_facade.h"
 
 using namespace std;
@@ -16,6 +18,19 @@ AnalyticManagerFacade::~AnalyticManagerFacade(){
 
 bool AnalyticManagerFacade::init( const SInitSettings & _settings ){
 
+    // users dispatching
+    DispatcherUser::SInitSettings udSettings;
+    udSettings.serviceWriteAheadLogger = _settings.services.systemEnvironment->serviceForWriteAheadLogging();
+    if( ! m_userDispatcher.init(udSettings) ){
+        return false;
+    }
+
+    // player dispatching
+    DispatcherPlayerContoller::SInitSettings pcdSettings;
+    pcdSettings.serviceInternalCommunication = _settings.services.serviceInternalCommunication;
+    if( ! m_playerControllerDispatcher.init(pcdSettings) ){
+        return false;
+    }
 
     m_threadMaintenance = new std::thread( & AnalyticManagerFacade::threadMaintenance, this );
 

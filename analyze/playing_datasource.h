@@ -45,6 +45,7 @@ public:
             , updateStepMillisec( 1000 / 24 ) // 24 fps ~ 41 ms
         {}
 
+        common_types::TContextId ctxId;
         common_types::TPersistenceSetId persistenceSetId;
         int64_t updateStepMillisec;
     };

@@ -8,7 +8,7 @@ using namespace std;
 using namespace common_types;
 
 static constexpr const char * PRINT_HEADER = "UserDispatcher:";
-static constexpr int64_t USER_TIMEOUT_MILLISEC = 60000;
+static constexpr int64_t USER_TIMEOUT_MILLISEC = 30000;
 
 const common_types::TUserId DispatcherUser::INVALID_USER_ID = "invalid_user_id";
 
@@ -17,15 +17,34 @@ DispatcherUser::DispatcherUser()
 
 }
 
+DispatcherUser::~DispatcherUser()
+{
+
+}
+
+bool DispatcherUser::init( const SInitSettings & _settings ){
+
+    m_state.settings = _settings;
+
+    loadPreviousSessionActiveUsers();
+
+
+
+    return true;
+}
+
 void DispatcherUser::runClock(){
 
     for( auto iter = m_users.begin(); iter != m_users.end(); ){
-        PUserState & state = ( * iter );
+        PUserState state = ( * iter );
         if( (common_utils::getCurrentTimeMillisec() - state->lastPingMillisec) > USER_TIMEOUT_MILLISEC ){
 
             VS_LOG_WARN << PRINT_HEADER << " user disappeared [" << state->userId << "]" << endl;
             iter = m_users.erase( iter );
             m_usersById.erase( state->userId );
+
+            // NOTE: remove record from WAL - ONLY if user is missing
+            m_state.settings.serviceWriteAheadLogger->closeUserRegistration( state->userId );
         }
         else{
             ++iter;
@@ -106,6 +125,14 @@ common_types::TUserId DispatcherUser::registerUser( std::string _userIp, common_
     m_users.push_back( state );
     m_usersById.insert( {state->userId, state} );
 
+    // write to WAL
+    SWALUserRegistration userReg;
+    userReg.registerId = state->userId;
+    userReg.userIp = state->userIp;
+    userReg.userPid = state->userPid;
+    userReg.registeredAtDateTime = common_utils::getCurrentDateTimeStr();
+    const bool rt = m_state.settings.serviceWriteAheadLogger->openUserRegistration( userReg );
+
     VS_LOG_INFO << PRINT_HEADER << " register new user [" << state->userId << "]" << endl;
     return state->userId;
 }
@@ -120,7 +147,21 @@ void DispatcherUser::updateUserState( const common_types::SUserState & _state ){
     }
 }
 
+void DispatcherUser::loadPreviousSessionActiveUsers(){
 
+    const vector<SWALUserRegistration> pastUsers = m_state.settings.serviceWriteAheadLogger->getUserRegistrations();
+    for( const SWALUserRegistration & userReg : pastUsers ){
+
+        PUserState state = std::make_shared<SUserState>();
+        state->userId = userReg.registerId;
+        state->userIp = userReg.userIp;
+        state->userPid = userReg.userPid;
+        state->lastPingMillisec = common_utils::getCurrentTimeMillisec();
+
+        m_users.push_back( state );
+        m_usersById.insert( {state->userId, state} );
+    }
+}
 
 
 

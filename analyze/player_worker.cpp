@@ -96,6 +96,7 @@ bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vect
         PlayingDatasource::SInitSettings settings;        
         settings.persistenceSetId = processedSensor.persistenceSetId;
         settings.updateStepMillisec = processedSensor.timeStepIntervalMillisec;
+        settings.ctxId = _settings.ctxId;
         if( ! datasource->init(settings) ){
             VS_LOG_ERROR << PRINT_HEADER << " failed to create datasource for sensor: " << processedSensor.recordedFromSensorId << endl;
             continue;
@@ -147,6 +148,7 @@ bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vect
         PlayingDatasource::SInitSettings settings;
         settings.persistenceSetId = processedSensor.persistenceSetId;
         settings.updateStepMillisec = processedSensor.timeStepIntervalMillisec;
+        settings.ctxId = _settings.ctxId;
         if( ! datasource->init(settings) ){
             VS_LOG_ERROR << PRINT_HEADER << " failed to create datasource for mission: " << processedSensor.missionId << endl;
             continue;

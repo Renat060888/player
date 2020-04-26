@@ -36,7 +36,24 @@ static std::string printPlayingStatus( common_types::EPlayerStatus _stat ){
 
 static common_types::EPlayerStatus convertPlayingStatusFromStr( const std::string & _str ){
 
+    if( "INITED" == _str ){ return common_types::EPlayerStatus::INITED; }
+    else if( "PREPARING" == _str ){ return common_types::EPlayerStatus::PREPARING; }
+    else if( "READY" == _str ){ return common_types::EPlayerStatus::READY; }
 
+    else if( "PLAYING" == _str ){ return common_types::EPlayerStatus::PLAYING; }
+    else if( "PAUSED" == _str ){ return common_types::EPlayerStatus::PAUSED; }
+    else if( "STOPPED" == _str ){ return common_types::EPlayerStatus::STOPPED; }
+    else if( "PLAY_FROM_POSITION" == _str ){ return common_types::EPlayerStatus::PLAY_FROM_POSITION; }
+    else if( "ALL_STEPS_PASSED" == _str ){ return common_types::EPlayerStatus::ALL_STEPS_PASSED; }
+    else if( "NOT_ENOUGH_STEPS" == _str ){ return common_types::EPlayerStatus::NOT_ENOUGH_STEPS; }
+    else if( "CLOSE" == _str ){ return common_types::EPlayerStatus::CLOSE; }
+
+    else if( "ACTIVE" == _str ){ return common_types::EPlayerStatus::ACTIVE; }
+    else if( "IDLE" == _str ){ return common_types::EPlayerStatus::IDLE; }
+
+    else if( "CRASHED" == _str ){ return common_types::EPlayerStatus::CRASHED; }
+    else if( "UNDEFINED" == _str ){ return common_types::EPlayerStatus::UNDEFINED; }
+    else{ assert( false && "unknown playing status str: " && _str.c_str() ); }
 }
 
 }

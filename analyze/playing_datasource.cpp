@@ -39,10 +39,11 @@ bool PlayingDatasource::init( const SInitSettings & _settings ){
     DatabaseManagerBase::SInitSettings settings;
     settings.host = CONFIG_PARAMS.baseParams.MONGO_DB_ADDRESS;
     settings.databaseName = CONFIG_PARAMS.baseParams.MONGO_DB_NAME;
-
     if( ! m_database->init(settings) ){
         return false;
     }
+
+    m_database->getPersistenceSetMetadata( _settings.ctxId );
 
     //
     if( ! createBeacons(m_timelineBeacons) ){

@@ -36,6 +36,8 @@ public:
     };
 
     DispatcherPlayerContoller();
+    ~DispatcherPlayerContoller();
+
     bool init( const SInitSettings & _settings );
     const SState & getState(){ return m_state; }
 
@@ -63,9 +65,10 @@ private:
     std::map<common_types::TContextId, common_types::IPlayerService *> m_playersByContextId;
     std::map<common_types::TUserId, common_types::IPlayerService *> m_playersByUserId;
     std::vector<IPlayerDispatcherObserver *> m_observers;
+    std::map<common_types::TPlayerId, common_types::TUserId> m_playerIdByUserId;
     // ( monitoring )
-    std::map<common_types::TPlayerId, SPlayerDescriptor> m_monitoringDescriptors;
-    std::vector<SPlayerDescriptor *> m_monitoringDescriptors2;
+    std::map<common_types::TPlayerId, SPlayerDescriptor *> m_monitoringDescriptorsByPlayerId;
+    std::vector<SPlayerDescriptor *> m_monitoringDescriptors;
 
     // TODO: temp ( must be in separate process )
     std::vector<PlayerController *> m_realPlayerControllersForTest;

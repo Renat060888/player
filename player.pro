@@ -18,6 +18,7 @@ DEFINES += \
 #    OBJREPR_LIBRARY_EXIST \
 
 LIBS += \
+    -lprotobuf \
     -lmongoc-1.0 \
     -lbson-1.0 \
     -lpthread \

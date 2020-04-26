@@ -26,6 +26,9 @@ public:
     bool init( const SInitSettings & _settings );
     const SState & getState(){ return m_state; }
 
+    // TODO: may be not so good
+    void setState( const common_types::SPlayingServiceState & _state ){ m_state.m_serviceState = _state; }
+
     const common_types::SPlayingServiceState & getServiceState() override;
 
     void start() override;
