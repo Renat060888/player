@@ -84,7 +84,7 @@ bool PlayerWorker::init( const SInitSettings & _settings ){
 bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vector<PlayingDatasource *> & _datasrc ){
 
     const vector<common_types::SPersistenceMetadata> ctxMetadatas = m_database->getPersistenceSetMetadata( _settings.ctxId );
-    const common_types::SPersistenceMetadata & ctxMetadata = ctxMetadatas[ 0 ];
+    const common_types::SPersistenceMetadata & ctxMetadata = ctxMetadatas[ 0 ]; // TODO: segfault ?
 
     // TODO: check 'update time' equality of all datasources
 

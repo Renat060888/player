@@ -9,6 +9,11 @@ ProxyPlayerController::ProxyPlayerController()
 
 }
 
+ProxyPlayerController::~ProxyPlayerController()
+{
+
+}
+
 bool ProxyPlayerController::init( const SInitSettings & _settings ){
 
     m_state.settings = _settings;
@@ -17,6 +22,10 @@ bool ProxyPlayerController::init( const SInitSettings & _settings ){
 
 
     return true;
+}
+
+void ProxyPlayerController::setServiceState( const common_types::SPlayingServiceState & _state ){
+    m_state.m_serviceState = _state;
 }
 
 const SPlayingServiceState & ProxyPlayerController::getServiceState(){
@@ -29,8 +38,8 @@ void ProxyPlayerController::start(){
     protocol_player_agent_to_controller::MessageRequestPlayStart msgStartPlaying;
     protocol_player_agent_to_controller::MessagePlayerAgent msgAgent;
     msgAgent.set_cmd_type( protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_START );
-    msgAgent.set_allocated_header( & header );
-    msgAgent.set_allocated_msg_play_start( & msgStartPlaying );
+    msgAgent.mutable_header()->CopyFrom( header );
+    msgAgent.mutable_msg_play_start()->CopyFrom( msgStartPlaying );
 
     m_protobufAgentToController.set_sender( protocol_player_agent_to_controller::W_PLAYER_AGENT );
     m_protobufAgentToController.set_allocated_msg_player_agent( & msgAgent );

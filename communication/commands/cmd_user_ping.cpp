@@ -11,16 +11,34 @@ using namespace common_types;
 static Json::Value serializePlayerState( common_types::IPlayerService * _player ){
 
     if( _player ){
-        Json::Value rootRecord;
-        rootRecord[ "status" ] = common_utils::printPlayingStatus( _player->getServiceState().status );
-        rootRecord[ "last_error" ] = _player->getServiceState().lastError;
-        rootRecord[ "..." ] = "...";
+        const SPlayingServiceState & state = _player->getServiceState();
 
-        // global range (millisec)
-        // current step (at millisec)
-        // step interval (millisec)
-        // simulate & real ranges (millisec)
-        // ... ?
+        Json::Value rootRecord;
+        rootRecord[ "status" ] = common_utils::printPlayingStatus( state.status );
+        rootRecord[ "last_error" ] = state.lastError;
+        rootRecord[ "global_range_left" ] = (long long)state.info.globalRangeMillisec.first;
+        rootRecord[ "global_range_right" ] = (long long)state.info.globalRangeMillisec.second;
+        rootRecord[ "current_step" ] = (long long)state.info.currentStepMillisec;
+        rootRecord[ "step_interval" ] = (long long)state.info.stepIntervalMillisec;
+
+        Json::Value datasetsRecord;
+        for( const SPlayingDataSet & dataset : state.info.playingData ){
+
+            Json::Value rangesRecord;
+            for( const TTimeRangeMillisec & range : dataset.dataRanges ){
+                Json::Value rangeRecord;
+                rangeRecord["range_left"] = (long long)range.first;
+                rangeRecord["range_right"] = (long long)range.second;
+                rangesRecord.append( rangeRecord );
+            }
+
+            Json::Value dsRecord;
+            dsRecord["unique_id"] = (long long)dataset.uniqueId;
+            dsRecord["real"] = dataset.real;
+            dsRecord["ranges"] = rangesRecord;
+            datasetsRecord.append( dsRecord );
+        }
+        rootRecord["datasets"] = datasetsRecord;
 
         return rootRecord;
     }
@@ -71,17 +89,34 @@ bool CommandUserPing::exec(){
         du->updateUserState( state );
 
         // reflect to user his player state
-        common_types::IPlayerService * player = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayer( m_userId );
+        DispatcherPlayerContoller * dpc = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
+        IPlayerService * player = dpc->getPlayerByUser( m_userId );
+        if( player ){
+            Json::Value rootRecord;
+            rootRecord[ "cmd_name" ] = "pong";
+            rootRecord[ "player_state" ] = serializePlayerState( player );
+            rootRecord[ "error_occured" ] = false;
+            rootRecord[ "code" ] = "OK";
 
-        Json::Value rootRecord;
-        rootRecord[ "cmd_name" ] = "pong";
-        rootRecord[ "player_state" ] = serializePlayerState( player );
-        rootRecord[ "error_occured" ] = false;
-        rootRecord[ "code" ] = "OK";
+            Json::FastWriter jsonWriter;
+            sendResponse( jsonWriter.write(rootRecord) );
+            return true;
+        }
+        else{
+            // it's like a player is not ready yet
+            Json::Value unavailableState;
+            unavailableState["status"] = "UNAVAILABLE";
 
-        Json::FastWriter jsonWriter;
-        sendResponse( jsonWriter.write(rootRecord) );
-        return true;
+            Json::Value rootRecord;
+            rootRecord[ "cmd_name" ] = "pong";
+            rootRecord[ "player_state" ] = unavailableState;
+            rootRecord[ "error_occured" ] = true;
+            rootRecord[ "code" ] = dpc->getState().lastError;
+
+            Json::FastWriter jsonWriter;
+            sendResponse( jsonWriter.write(rootRecord) );
+            return false;
+        }
     }
     else{
         sendResponse( errMsg );

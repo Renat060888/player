@@ -34,9 +34,6 @@ public:
     DispatcherUser * getUserDispatcher();
     DispatcherPlayerContoller * getPlayerDispatcher();
 
-    // TODO: deprecated ?
-    common_types::IPlayerService * getPlayer( const common_types::TUserId & _id );
-
 
 private:
     void threadMaintenance();

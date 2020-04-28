@@ -159,12 +159,58 @@ static bool executeShellCommand(){
     return true;
 }
 
+bool unitTests(){
+
+    static constexpr const char * PRINT_HEADER = "UnitTest:";
+
+    // db
+    DatabaseManagerBase * m_database = DatabaseManagerBase::getInstance();
+
+    DatabaseManagerBase::SInitSettings settings;
+    settings.host = CONFIG_PARAMS.baseParams.MONGO_DB_ADDRESS;
+    settings.databaseName = CONFIG_PARAMS.baseParams.MONGO_DB_NAME;
+
+    if( ! m_database->init(settings) ){
+        ::exit( EXIT_FAILURE );
+    }
+
+    // pd
+    const vector<common_types::SPersistenceMetadata> ctxMetadatas = m_database->getPersistenceSetMetadata( (common_types::TContextId)777 );
+    const common_types::SPersistenceMetadata & ctxMetadata = ctxMetadatas[ 0 ];
+
+    for( const common_types::SPersistenceMetadataRaw & processedSensor : ctxMetadata.persistenceFromRaw ){
+        PlayingDatasource * datasource = new PlayingDatasource();
+
+        PlayingDatasource::SInitSettings settings;
+        settings.persistenceSetId = processedSensor.persistenceSetId;
+        settings.updateStepMillisec = processedSensor.timeStepIntervalMillisec;
+        settings.ctxId = 777;
+        if( ! datasource->init(settings) ){
+            VS_LOG_ERROR << PRINT_HEADER << " failed to create datasource for mission: " << processedSensor.missionId << endl;
+            continue;
+        }
+
+        const PlayingDatasource::SState & state = datasource->getState();
+
+        VS_LOG_TRACE << PRINT_HEADER
+                     << " raw datasrc on mission " << processedSensor.missionId
+                     << " time begin ms " << state.globalTimeRangeMillisec.first
+                     << " time end ms " << state.globalTimeRangeMillisec.second
+                     << " steps " << state.stepsCount
+                     << endl;
+    }
+
+    ::exit( EXIT_SUCCESS );
+}
+
 int main( int argc, char ** argv, char ** env ){
 
     if( ! initSingletons(argc, argv, env) ){
         PRELOG_ERR << "============================ PLAYER START FAILED (singletons area) ============================" << endl;
         return -1;
     }
+
+//    unitTests();
 
 #if 1
     VS_LOG_INFO << endl;

@@ -8,7 +8,7 @@ using namespace std;
 using namespace common_types;
 
 static constexpr const char * PRINT_HEADER = "PlayerDispatcher:";
-static constexpr int64_t PLAYER_TIMEOUT_MILLISEC = 60000;
+static constexpr int64_t PLAYER_TIMEOUT_MILLISEC = 30000;
 
 DispatcherPlayerContoller::DispatcherPlayerContoller()
 {
@@ -180,10 +180,7 @@ void DispatcherPlayerContoller::updatePlayerState( const common_types::SPlayingS
         SPlayerDescriptor * descr = iter->second;
 
         descr->lastPongMillisec = common_utils::getCurrentTimeMillisec();
-
-        // TODO: terrible solution ( need an interface segregation )
-        ProxyPlayerController * realClass = (ProxyPlayerController *)descr->player;
-        realClass->setState( _state );
+        descr->editablePlayer->setServiceState( _state );
     }
     else{
         // new proxy controller
@@ -192,20 +189,22 @@ void DispatcherPlayerContoller::updatePlayerState( const common_types::SPlayingS
 
         ProxyPlayerController * player = new ProxyPlayerController();
         if( player->init(settings) ){
-            const TUserId userId = m_playerIdByUserId[ player->getState().m_serviceState.playerId ];
+            const TUserId userId = m_playerIdByUserId[ _state.playerId ];
 
             // containers
             m_players.push_back( player );
-            m_playersById.insert( {player->getState().m_serviceState.playerId, player} );
-            m_playersByContextId.insert( {player->getState().m_serviceState.ctxId, player} );
+            m_playersById.insert( {_state.playerId, player} );
+            m_playersByContextId.insert( {_state.ctxId, player} );
             m_playersByUserId.insert( {userId, player} );
 
             // descriptor
             SPlayerDescriptor * descr = new SPlayerDescriptor();
-            descr->lastPongMillisec = common_utils::getCurrentTimeMillisec();
             descr->id = _state.playerId;
             descr->player = player;
+            descr->editablePlayer = player;
             descr->userId = userId;
+            descr->lastPongMillisec = common_utils::getCurrentTimeMillisec();
+            descr->editablePlayer->setServiceState( _state );
 
             m_monitoringDescriptors.push_back( descr );
             m_monitoringDescriptorsByPlayerId.insert( {_state.playerId, descr} );

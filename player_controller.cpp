@@ -31,6 +31,7 @@ void PlayerController::callbackNetworkRequest( PEnvironmentRequest _request ){
 
     if( m_protobufAgentToController.ParseFromString(_request->getIncomingMessage()) ){
         const protocol_player_agent_to_controller::MessagePlayerAgent & msgAgent = m_protobufAgentToController.msg_player_agent();
+
         switch( msgAgent.cmd_type() ){
         case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_START : {
             processMsgStart( msgAgent );
@@ -109,21 +110,26 @@ bool PlayerController::processMsgStepBackward( const protocol_player_agent_to_co
 
 bool PlayerController::processMsgSetRange( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
+    const protocol_player_agent_to_controller::MessageRequestSetRange & msgRange = _msgAgent.msg_set_range();
+    return m_worker.setRange( { msgRange.leftplayingrangemillisec(), msgRange.rightplayingrangemillisec() } );
 }
 
 void PlayerController::processMsgSwitchReverseMode( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
-    m_worker.switchReverseMode( true );
+    const protocol_player_agent_to_controller::MessageRequestPlayReverse & msgReverse = _msgAgent.msg_play_reverse();
+    m_worker.switchReverseMode( msgReverse.reverse() );
 }
 
 void PlayerController::processMsgSwitchLoopMode( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
-    m_worker.switchLoopMode( true );
+    const protocol_player_agent_to_controller::MessageRequestPlayLoop & msgLoop = _msgAgent.msg_play_loop();
+    m_worker.switchLoopMode( msgLoop.loop() );
 }
 
 bool PlayerController::processMsgPlayFromPosition( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
 
-    return m_worker.playFromPosition( 999999999LL );
+    const protocol_player_agent_to_controller::MessageRequestPlayFromPos & msgFromPos = _msgAgent.msg_play_from_pos();
+    return m_worker.playFromPosition( msgFromPos.positionmillisec() );
 }
 
 bool PlayerController::processMsgIncreasePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent ){
@@ -142,6 +148,8 @@ void PlayerController::processMsgNormalizePlayingSpeed( const protocol_player_ag
 }
 
 bool PlayerController::init( const SInitSettings & _settings ){
+
+    m_state.settings = _settings;
 
     // worker
     PlayerWorker::SInitSettings workerSettings;
@@ -172,7 +180,6 @@ bool PlayerController::init( const SInitSettings & _settings ){
 void PlayerController::threadAsyncLaunch(){
 
     while( ! m_shutdownCalled ){
-
         launch();
 
         std::this_thread::sleep_for( std::chrono::milliseconds(10) );
@@ -231,7 +238,7 @@ std::string PlayerController::createPingMessage(){
 
     Json::FastWriter jsonWriter;
 
-    cout << "state: " << jsonWriter.write( rootRecord ) << endl;
+//    cout << "state: " << jsonWriter.write( rootRecord ) << endl;
 
     return jsonWriter.write( rootRecord );
 }

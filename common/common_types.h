@@ -157,6 +157,13 @@ public:
     virtual void normalizePlayingSpeed() = 0;
 };
 
+class IEditablePlayer {
+public:
+    virtual ~IEditablePlayer(){}
+
+    virtual void setServiceState( const SPlayingServiceState & _state ) = 0;
+};
+
 
 // ---------------------------------------------------------------------------
 // service locator

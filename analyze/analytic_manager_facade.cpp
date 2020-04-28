@@ -59,17 +59,6 @@ void AnalyticManagerFacade::threadMaintenance(){
     }
 }
 
-common_types::IPlayerService * AnalyticManagerFacade::getPlayer( const common_types::TUserId & _id ){
-
-    common_types::IPlayerService * player = m_playerControllerDispatcher.getPlayerByUser( _id );
-    if( ! player ){
-        m_state.lastError = m_playerControllerDispatcher.getState().lastError;
-        return nullptr;
-    }
-
-    return player;
-}
-
 DispatcherPlayerContoller * AnalyticManagerFacade::getPlayerDispatcher(){
     return & m_playerControllerDispatcher;
 }

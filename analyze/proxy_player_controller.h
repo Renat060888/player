@@ -6,7 +6,7 @@
 
 #include "common/common_types.h"
 
-class ProxyPlayerController : public common_types::IPlayerService
+class ProxyPlayerController : public common_types::IPlayerService, public common_types::IEditablePlayer
 {
 public:
     struct SInitSettings {
@@ -22,12 +22,10 @@ public:
     };
 
     ProxyPlayerController();
+    ~ProxyPlayerController();
 
     bool init( const SInitSettings & _settings );
     const SState & getState(){ return m_state; }
-
-    // TODO: may be not so good
-    void setState( const common_types::SPlayingServiceState & _state ){ m_state.m_serviceState = _state; }
 
     const common_types::SPlayingServiceState & getServiceState() override;
 
@@ -49,6 +47,7 @@ public:
 
 
 private:
+    virtual void setServiceState( const common_types::SPlayingServiceState & _state ) override;
 
     // data
     SState m_state;

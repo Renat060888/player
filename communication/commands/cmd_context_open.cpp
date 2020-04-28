@@ -38,9 +38,10 @@ bool CommandContextOpen::exec(){
     string errMsg;
     if( userHasPermission(m_userId, (SIncomingCommandServices *)m_services, errMsg) ){
         const TContextId ctxId = OBJREPR_BUS.getContextIdByName( m_contextName );
+        const TContextId ctxId2 = 777;;
 
         DispatcherPlayerContoller * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
-        if( playerDipatcher->requestPlayer(m_userId, 777) ){
+        if( playerDipatcher->requestPlayer(m_userId, ctxId2) ){
             Json::Value rootRecord;
             rootRecord[ "cmd_name" ] = "ctx_open";
             rootRecord[ "error_occured" ] = false;

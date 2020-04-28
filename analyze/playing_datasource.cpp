@@ -43,6 +43,7 @@ bool PlayingDatasource::init( const SInitSettings & _settings ){
         return false;
     }
 
+    // in order to update knowledge of the content in database
     m_database->getPersistenceSetMetadata( _settings.ctxId );
 
     //
@@ -170,9 +171,8 @@ void PlayingDatasource::setTimestampToEmptyAreas( std::unordered_map<common_type
         SBeacon & beacon = valuePair.second;
 
         for( SBeacon::SDataBlock * block : beacon.dataBlocks ){
-
             if( block->empty ){
-
+                // TODO: do ?
             }
         }
     }

@@ -105,7 +105,6 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
 
             const boost::property_tree::ptree & playerState = parsedJson.get_child( "player_state" );
             parsePlayerState( playerState, cmd1->playerState.info );
-
 //            cmd1->playerState.ctxId = parsedJson.get<uint32_t>("ctx_id");
             cmd1->playerState.playerId = parsedJson.get<string>("player_id");
             cmd1->playerState.lastError = parsedJson.get<string>("error_str");
