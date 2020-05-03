@@ -138,7 +138,7 @@ class IPlayerService {
 public:   
     virtual ~IPlayerService(){}
 
-    virtual const SPlayingServiceState & getServiceState() = 0;
+    virtual const SPlayingServiceState & getServiceState() const = 0;
 
     virtual void start() = 0;
     virtual void pause() = 0;

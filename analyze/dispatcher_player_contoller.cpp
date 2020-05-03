@@ -28,6 +28,33 @@ bool DispatcherPlayerContoller::init( const SInitSettings & _settings ){
     return true;
 }
 
+// functors
+class FunctorIPlayerService {
+public:
+    FunctorIPlayerService( TPlayerId _playerId )
+        : playerId(_playerId)
+    {}
+
+    bool operator()( const IPlayerService * _rhs ){
+        return ( this->playerId == _rhs->getServiceState().playerId );
+    }
+
+    TPlayerId playerId;
+};
+
+class FunctorSPlayerDescriptor {
+public:
+    FunctorSPlayerDescriptor( TPlayerId _playerId )
+        : playerId(_playerId)
+    {}
+
+    bool operator()( DispatcherPlayerContoller::SPlayerDescriptor * _rhs ){
+        return ( this->playerId == _rhs->id );
+    }
+
+    TPlayerId playerId;
+};
+
 void DispatcherPlayerContoller::runClock(){
 
     for( auto iter = m_monitoringDescriptors.begin(); iter != m_monitoringDescriptors.end(); ){
@@ -36,7 +63,8 @@ void DispatcherPlayerContoller::runClock(){
 
             VS_LOG_WARN << PRINT_HEADER << " player disappeared [" << descr->id << "]" << endl;
 
-//            m_players.erase( iter );
+            auto remIter = std::remove_if( m_players.begin(), m_players.end(), FunctorIPlayerService(descr->id) );
+            m_players.erase( remIter, m_players.end() );
             m_playersById.erase( descr->id );
             m_playersByUserId.erase( descr->userId );
             m_playersByContextId.erase( descr->player->getServiceState().ctxId );
@@ -74,6 +102,7 @@ bool DispatcherPlayerContoller::requestPlayer( const common_types::TUserId & _us
 
     m_realPlayerControllersForTest.push_back( playerContoller );
 
+    // TODO: create new process via ProcessLauncher ( player --contorller --player-id=0 --context-id=0 ... )
 
     return true;
 }
@@ -85,7 +114,8 @@ void DispatcherPlayerContoller::releasePlayer( const common_types::TPlayerId & _
         SPlayerDescriptor * descr = iter->second;
 
         // destroy player
-//        m_players.erase( iter );
+        auto remIter = std::remove_if( m_players.begin(), m_players.end(), FunctorIPlayerService(descr->id) );
+        m_players.erase( remIter, m_players.end() );
         m_playersById.erase( descr->id );
         m_playersByUserId.erase( descr->userId );
         m_playersByContextId.erase( descr->player->getServiceState().ctxId );
@@ -95,7 +125,8 @@ void DispatcherPlayerContoller::releasePlayer( const common_types::TPlayerId & _
         descr->player = nullptr;
 
         // destroy monitor
-//        iter = m_monitoringDescriptors.erase( iter );
+        auto remIter2 = std::remove_if( m_monitoringDescriptors.begin(), m_monitoringDescriptors.end(), FunctorSPlayerDescriptor(descr->id) );
+        m_monitoringDescriptors.erase( remIter2, m_monitoringDescriptors.end() );
         m_monitoringDescriptorsByPlayerId.erase( iter );
 
         delete descr;

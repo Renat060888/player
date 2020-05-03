@@ -5,7 +5,7 @@
 
 #include "common/common_vars.h"
 #include "system/config_reader.h"
-#include "playing_datasource.h"
+#include "datasource_reader.h"
 
 using namespace std;
 using namespace common_types;
@@ -13,7 +13,7 @@ using namespace common_types;
 static constexpr const char * PRINT_HEADER = "DataSrc:";
 static constexpr int16_t PACKAGE_SIZE = 200;
 
-PlayingDatasource::PlayingDatasource()
+DatasourceReader::DatasourceReader()
     : m_currentPackHeadStep(0)
     , m_currentReadStep(0)
     , m_database(nullptr)
@@ -21,14 +21,14 @@ PlayingDatasource::PlayingDatasource()
     m_currentPlayingFrame.resize( PACKAGE_SIZE );
 }
 
-PlayingDatasource::~PlayingDatasource()
+DatasourceReader::~DatasourceReader()
 {
     DatabaseManagerBase::destroyInstance( m_database );
 
     destroyBeacons( m_timelineBeacons );
 }
 
-bool PlayingDatasource::init( const SInitSettings & _settings ){
+bool DatasourceReader::init( const SInitSettings & _settings ){
 
     m_settings = _settings;
     m_state.settings = & m_settings;
@@ -71,7 +71,7 @@ bool PlayingDatasource::init( const SInitSettings & _settings ){
     return true;
 }
 
-void PlayingDatasource::fillState( const std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons, SState & _state ){
+void DatasourceReader::fillState( const std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons, SState & _state ){
 
     //
     vector<TLogicStep> sortedHeadSteps;
@@ -89,7 +89,7 @@ void PlayingDatasource::fillState( const std::unordered_map<common_types::TLogic
     }
 }
 
-const PlayingDatasource::SState & PlayingDatasource::getState(){
+const DatasourceReader::SState & DatasourceReader::getState(){
 
     //
     m_state.stepsCount = 0;
@@ -115,7 +115,7 @@ const PlayingDatasource::SState & PlayingDatasource::getState(){
     return m_state;
 }
 
-bool PlayingDatasource::createBeacons( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons ){
+bool DatasourceReader::createBeacons( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons ){
 
     destroyBeacons( _beacons );
 
@@ -152,7 +152,7 @@ bool PlayingDatasource::createBeacons( std::unordered_map<common_types::TLogicSt
     return true;
 }
 
-void PlayingDatasource::destroyBeacons( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons ){
+void DatasourceReader::destroyBeacons( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons ){
 
     for( auto & valuePair : _beacons ){
         const SBeacon & beacon = valuePair.second;
@@ -165,7 +165,7 @@ void PlayingDatasource::destroyBeacons( std::unordered_map<common_types::TLogicS
     _beacons.clear();
 }
 
-void PlayingDatasource::setTimestampToEmptyAreas( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons ){
+void DatasourceReader::setTimestampToEmptyAreas( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons ){
 
     for( auto & valuePair : _beacons ){
         SBeacon & beacon = valuePair.second;
@@ -178,7 +178,7 @@ void PlayingDatasource::setTimestampToEmptyAreas( std::unordered_map<common_type
     }
 }
 
-std::vector<PlayingDatasource::SBeacon::SDataBlock *> PlayingDatasource::createBlocks( const std::vector<SEventsSessionInfo> & _sessionsInfo,
+std::vector<DatasourceReader::SBeacon::SDataBlock *> DatasourceReader::createBlocks( const std::vector<SEventsSessionInfo> & _sessionsInfo,
                                                                                      SStepCounter & _currentPassedPoint,
                                                                                      std::vector<SEventsSessionInfo>::size_type & _currentSessionIdx,
                                                                                      int32_t & _emptyStepCount ){
@@ -294,7 +294,7 @@ std::vector<PlayingDatasource::SBeacon::SDataBlock *> PlayingDatasource::createB
     return dataBlocks;
 }
 
-int64_t PlayingDatasource::getTimestampByLogicStep( const SEventsSessionInfo * _session, common_types::TLogicStep _logicStep ){
+int64_t DatasourceReader::getTimestampByLogicStep( const SEventsSessionInfo * _session, common_types::TLogicStep _logicStep ){
 
     auto iter = std::find_if( _session->steps.begin(), _session->steps.end(), FunctorObjectStep(_logicStep) );
     if( iter != _session->steps.end() ){
@@ -304,7 +304,7 @@ int64_t PlayingDatasource::getTimestampByLogicStep( const SEventsSessionInfo * _
     return -1;
 }
 
-std::vector<SEventsSessionInfo> PlayingDatasource::checkSessionsForEmptyFrames( const std::vector<SEventsSessionInfo> & _sessionInfo ){
+std::vector<SEventsSessionInfo> DatasourceReader::checkSessionsForEmptyFrames( const std::vector<SEventsSessionInfo> & _sessionInfo ){
 
     std::vector<SEventsSessionInfo> out;
 
@@ -364,7 +364,7 @@ std::vector<SEventsSessionInfo> PlayingDatasource::checkSessionsForEmptyFrames( 
     return out;
 }
 
-bool PlayingDatasource::moveStepWindow( int64_t _stepFormal, int64_t & _currentPackHeadStep ){
+bool DatasourceReader::moveStepWindow( int64_t _stepFormal, int64_t & _currentPackHeadStep ){
 
     if( _stepFormal < _currentPackHeadStep ||
         _stepFormal >= (_currentPackHeadStep + PACKAGE_SIZE)
@@ -378,7 +378,7 @@ bool PlayingDatasource::moveStepWindow( int64_t _stepFormal, int64_t & _currentP
     return false;
 }
 
-bool PlayingDatasource::read( common_types::TLogicStep _step ){
+bool DatasourceReader::read( common_types::TLogicStep _step ){
 
     if( moveStepWindow( _step, m_currentPackHeadStep ) && _step < m_state.stepsCount ){
         if( ! loadPackage( m_currentPackHeadStep, m_currentPlayingFrame ) ){
@@ -390,7 +390,7 @@ bool PlayingDatasource::read( common_types::TLogicStep _step ){
     return true;
 }
 
-bool PlayingDatasource::readInstant( common_types::TLogicStep _step ){
+bool DatasourceReader::readInstant( common_types::TLogicStep _step ){
 
     if( ! loadSingleFrame(_step, m_currentInstantPlayingFrame) ){
         return false;
@@ -399,7 +399,7 @@ bool PlayingDatasource::readInstant( common_types::TLogicStep _step ){
     return true;
 }
 
-bool PlayingDatasource::loadSingleFrame( common_types::TLogicStep _logicStep, TObjectsAtOneStep & _step ){
+bool DatasourceReader::loadSingleFrame( common_types::TLogicStep _logicStep, TObjectsAtOneStep & _step ){
 
     _step.clear();
 
@@ -428,7 +428,7 @@ bool PlayingDatasource::loadSingleFrame( common_types::TLogicStep _logicStep, TO
     return false;
 }
 
-bool PlayingDatasource::loadPackage( int64_t _currentPackHeadStep, std::vector<TObjectsAtOneStep> & _steps ){
+bool DatasourceReader::loadPackage( int64_t _currentPackHeadStep, std::vector<TObjectsAtOneStep> & _steps ){
 
     auto iter = m_timelineBeacons.find( _currentPackHeadStep );
     if( iter != m_timelineBeacons.end() ){
@@ -483,7 +483,7 @@ bool PlayingDatasource::loadPackage( int64_t _currentPackHeadStep, std::vector<T
     return true;
 }
 
-inline void PlayingDatasource::getActualData(   const SBeacon & _beacon,
+inline void DatasourceReader::getActualData(   const SBeacon & _beacon,
                                                 const common_types::TLogicStep _logicFormalStep,
                                                 common_types::TSessionNum & _sesNum,
                                                 common_types::TLogicStep & _logicActualStep ){
@@ -517,7 +517,7 @@ inline void PlayingDatasource::getActualData(   const SBeacon & _beacon,
     }
 }
 
-const PlayingDatasource::TObjectsAtOneStep & PlayingDatasource::getCurrentStep(){
+const DatasourceReader::TObjectsAtOneStep & DatasourceReader::getCurrentStep(){
     return m_currentPlayingFrame[ m_currentReadStep % PACKAGE_SIZE ];
 }
 

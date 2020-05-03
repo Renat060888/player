@@ -7,7 +7,7 @@
 
 // TODO: template ( what if objects kinds is many ? ) - trajectory, weather, etc...
 
-class PlayingDatasource
+class DatasourceReader
 {
 public:
     // TODO ^
@@ -65,11 +65,11 @@ public:
         SInitSettings * settings;
     };
 
-    PlayingDatasource();
-    ~PlayingDatasource();
+    DatasourceReader();
+    ~DatasourceReader();
 
     // TODO: may be very slow & work or not ?
-    bool operator>( PlayingDatasource & _rhs ){
+    bool operator>( DatasourceReader & _rhs ){
         return ( this->getState().globalTimeRangeMillisec.first
                  > _rhs.getState().globalTimeRangeMillisec.first );
     }

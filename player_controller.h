@@ -38,7 +38,7 @@ private:
 
     void threadAsyncLaunch();
 
-    void pingPlayerAgent();
+    inline void pingPlayerAgent();
     std::string createPingMessage();
     PNetworkClient connectToNetwork( const common_types::TPlayerId & _id );
 

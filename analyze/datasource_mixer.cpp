@@ -34,7 +34,7 @@ bool DatasourceMixer::init( const SInitSettings & _settings ){
 }
 
 struct FunctorCompareDatasources {
-    bool operator()( PlayingDatasource * _d1, PlayingDatasource * _d2 ){
+    bool operator()( DatasourceReader * _d1, DatasourceReader * _d2 ){
         return _d1->getState().globalTimeRangeMillisec.first < _d2->getState().globalTimeRangeMillisec.first;
     }
 };
@@ -46,8 +46,8 @@ const DatasourceMixer::SState & DatasourceMixer::getState(){
     }
 
     if( 1 == m_state.settings.datasources.size() ){
-        PlayingDatasource * firstDatasource = m_state.settings.datasources[ 0 ];
-        const PlayingDatasource::SState & state = firstDatasource->getState();
+        DatasourceReader * firstDatasource = m_state.settings.datasources[ 0 ];
+        const DatasourceReader::SState & state = firstDatasource->getState();
 
         m_state.globalDataRangeMillisec = state.globalTimeRangeMillisec;
         m_state.globalStepCount = state.stepsCount;
@@ -59,9 +59,9 @@ const DatasourceMixer::SState & DatasourceMixer::getState(){
         int64_t totalUpdateStepMillisec = 0;
 
         for( std::size_t i = 0; i < m_state.settings.datasources.size(); i++ ){
-            PlayingDatasource * datasource = m_state.settings.datasources[ i ];
+            DatasourceReader * datasource = m_state.settings.datasources[ i ];
 
-            const PlayingDatasource::SState & state = datasource->getState();
+            const DatasourceReader::SState & state = datasource->getState();
 
             if( 0 == i ){
                 m_state.globalDataRangeMillisec.first = state.globalTimeRangeMillisec.first;
@@ -82,10 +82,10 @@ const DatasourceMixer::SState & DatasourceMixer::getState(){
     return m_state;
 }
 
-bool DatasourceMixer::mixDatasources( std::vector<PlayingDatasource *> _datasources ){
+bool DatasourceMixer::mixDatasources( std::vector<DatasourceReader *> _datasources ){
 
     if( 1 == _datasources.size() ){
-        PlayingDatasource * datasource = _datasources[ 0 ];
+        DatasourceReader * datasource = _datasources[ 0 ];
 
         SMixerTrack track;
         track.logicStepOffset = 0;
@@ -99,7 +99,7 @@ bool DatasourceMixer::mixDatasources( std::vector<PlayingDatasource *> _datasour
     std::sort( _datasources.begin(), _datasources.end(), FunctorCompareDatasources() );
 
     // push off from 1st sorted datasource
-    PlayingDatasource * firstDatasource = _datasources[ 0 ];
+    DatasourceReader * firstDatasource = _datasources[ 0 ];
 
     SMixerTrack track;
     track.logicStepOffset = 0;
@@ -107,15 +107,15 @@ bool DatasourceMixer::mixDatasources( std::vector<PlayingDatasource *> _datasour
     m_mixerTracks.push_back( track );
 
     //
-    const PlayingDatasource::SState & state = firstDatasource->getState();
+    const DatasourceReader::SState & state = firstDatasource->getState();
     const int64_t firstDatasrcLeftBoundMillisec = state.globalTimeRangeMillisec.first;
     const int64_t updateStepMillisec = state.settings->updateStepMillisec;
 
     // mix
     for( std::size_t i = 1; i < _datasources.size(); i++ ){
-        PlayingDatasource * datasource = _datasources[ i ];
+        DatasourceReader * datasource = _datasources[ i ];
 
-        const PlayingDatasource::SState & state = datasource->getState();
+        const DatasourceReader::SState & state = datasource->getState();
         const int64_t leftBoundMillisec = state.globalTimeRangeMillisec.first;
 
         SMixerTrack track;
@@ -142,7 +142,7 @@ bool DatasourceMixer::read( common_types::TLogicStep _step ){
             continue;
         }
 
-        const PlayingDatasource::TObjectsAtOneStep & data = track.src->getCurrentStep();
+        const DatasourceReader::TObjectsAtOneStep & data = track.src->getCurrentStep();
         m_currentStepFromDatasources.insert( m_currentStepFromDatasources.end(), data.begin(), data.end() );
     }
 
@@ -164,13 +164,13 @@ bool DatasourceMixer::readInstant( common_types::TLogicStep _step ){
             continue;
         }
 
-        const PlayingDatasource::TObjectsAtOneStep & data = track.src->getCurrentStep();
+        const DatasourceReader::TObjectsAtOneStep & data = track.src->getCurrentStep();
         m_currentStepFromDatasources.insert( m_currentStepFromDatasources.end(), data.begin(), data.end() );
     }
 
     return true;
 }
 
-const PlayingDatasource::TObjectsAtOneStep & DatasourceMixer::getCurrentStep() const {
+const DatasourceReader::TObjectsAtOneStep & DatasourceMixer::getCurrentStep() const {
     return m_currentStepFromDatasources;
 }

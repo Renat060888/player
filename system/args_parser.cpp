@@ -17,6 +17,8 @@ bpo::options_description ArgsParser::getArgumentsDescrTemplateMethodPart() {
             ("start-agent", "start player agent")
             ("start-contoller", "start player controller")
             ("stop", "stop server")
+            ("player-id", bpo::value<std::string>(), "invalid_id")
+            ("context-id", bpo::value<common_types::TContextId>(), 0)
             ;
 
     return desc;
@@ -38,6 +40,14 @@ void ArgsParser::checkArgumentsTemplateMethodPart( const bpo::variables_map & _v
 
     if( _varMap.find("start-contoller") != _varMap.end() ){
         m_commmandLineArgs[EPlayerArguments::SHELL_CMD_START_PLAYER_CONTROLLER] = "bla-bla";
+    }
+
+    if( _varMap.find("player-id") != _varMap.end() ){
+        m_commmandLineArgs[EPlayerArguments::PLAYER_CONTROLLER_ID] = _varMap["player-id"].as<std::string>();
+    }
+
+    if( _varMap.find("context-id") != _varMap.end() ){
+        m_commmandLineArgs[EPlayerArguments::PLAYER_CONTROLLER_CTX_ID] = _varMap["context-id"].as<common_types::TContextId>();
     }
 
     if( _varMap.find("stop") != _varMap.end() ){

@@ -106,6 +106,7 @@ PUserState DispatcherUser::getUser( const common_types::TUserId & _userId ){
 common_types::TUserId DispatcherUser::registerUser( std::string _userIp, common_types::TPid _userPid ){
 
     // check for valid ip & pid
+    // TODO: do
 
     // check for user with same ip/pid
     for( const PUserState & state : m_users ){
@@ -144,6 +145,10 @@ void DispatcherUser::updateUserState( const common_types::SUserState & _state ){
         PUserState user = iter->second;
 
         user->lastPingMillisec = common_utils::getCurrentTimeMillisec();
+    }
+    else{
+        VS_LOG_ERROR << PRINT_HEADER << " unknown user id: " << _state.userId << endl;
+        assert( false && "user id must be known to the system" );
     }
 }
 

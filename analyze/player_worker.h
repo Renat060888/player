@@ -10,7 +10,7 @@
 
 #include "common/common_types.h"
 #include "player_iterator.h"
-#include "playing_datasource.h"
+#include "datasource_reader.h"
 #include "datasource_mixer.h"
 
 class PlayerWorker
@@ -65,7 +65,7 @@ public:
 private:
     void threadPlaying();
 
-    bool createDatasources( const SInitSettings & _settings, std::vector<PlayingDatasource *> & _datasrc );
+    bool createDatasources( const SInitSettings & _settings, std::vector<DatasourceReader *> & _datasrc );
 
     void playingLoop();
     bool playOneStep();
@@ -73,7 +73,7 @@ private:
     inline void emitStepInstant( common_types::TLogicStep _step );
     void hideFutureObjects();
 
-    inline void playObjects( const PlayingDatasource::TObjectsAtOneStep & _objectsStep );
+    inline void playObjects( const DatasourceReader::TObjectsAtOneStep & _objectsStep );
 
     // data    
     SState m_state;

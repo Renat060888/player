@@ -34,10 +34,10 @@ static void parsePlayerState( const boost::property_tree::ptree & playerState, c
     info.globalRangeMillisec.first = playerState.get<int64_t>("global_range_left");
     info.globalRangeMillisec.second = playerState.get<int64_t>("global_range_right");
 
-//    cout << "update step: " << info.stepIntervalMillisec << endl;
-//    cout << "curr step: " << common_utils::timeMillisecToStr(info.currentStepMillisec) << endl;
-//    cout << "gl left step: " << common_utils::timeMillisecToStr(info.globalRangeMillisec.first) << endl;
-//    cout << "gl right step: " << common_utils::timeMillisecToStr(info.globalRangeMillisec.second) << endl;
+//    VS_LOG_TRACE << "update step: " << info.stepIntervalMillisec << endl;
+//    VS_LOG_TRACE << "curr step: " << common_utils::timeMillisecToStr(info.currentStepMillisec) << endl;
+//    VS_LOG_TRACE << "gl left step: " << common_utils::timeMillisecToStr(info.globalRangeMillisec.first) << endl;
+//    VS_LOG_TRACE << "gl right step: " << common_utils::timeMillisecToStr(info.globalRangeMillisec.second) << endl;
 
     boost::property_tree::ptree dataSets = playerState.get_child("datasets");
     for( auto iter = dataSets.begin(); iter != dataSets.end(); ++iter ){
@@ -52,8 +52,8 @@ static void parsePlayerState( const boost::property_tree::ptree & playerState, c
         for( auto iter = ranges.begin(); iter != ranges.end(); ++iter ){
             boost::property_tree::ptree arrElement = iter->second;
 
-//            cout << "range left: " << common_utils::timeMillisecToStr(arrElement.get<int64_t>("range_left")) << endl;
-//            cout << "range right: " << common_utils::timeMillisecToStr(arrElement.get<int64_t>("range_right")) << endl;
+//            VS_LOG_TRACE << "range left: " << common_utils::timeMillisecToStr(arrElement.get<int64_t>("range_left")) << endl;
+//            VS_LOG_TRACE << "range right: " << common_utils::timeMillisecToStr(arrElement.get<int64_t>("range_right")) << endl;
 
             dataSet.dataRanges.push_back( {arrElement.get<int64_t>("range_left"), arrElement.get<int64_t>("range_right")} );
         }
@@ -105,7 +105,7 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
 
             const boost::property_tree::ptree & playerState = parsedJson.get_child( "player_state" );
             parsePlayerState( playerState, cmd1->playerState.info );
-//            cmd1->playerState.ctxId = parsedJson.get<uint32_t>("ctx_id");
+            cmd1->playerState.ctxId = 0;
             cmd1->playerState.playerId = parsedJson.get<string>("player_id");
             cmd1->playerState.lastError = parsedJson.get<string>("error_str");
             cmd1->playerState.status = common_utils::convertPlayingStatusFromStr( parsedJson.get<string>("status") );
@@ -133,14 +133,6 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
             sendFailToExternal( _request, "I don't know such command name of 'service' command type (-_-)" );
             return nullptr;
         }
-    }
-    // -------------------------------------------------------------------------------------
-    // source
-    // -------------------------------------------------------------------------------------
-    else if( "source" == parsedJson.get<string>(common_vars::cmd::COMMAND_TYPE) ){
-
-
-
     }
     // -------------------------------------------------------------------------------------
     // analyze
@@ -203,6 +195,20 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
             sendFailToExternal( _request, "I don't know such command name of 'analyze' command type (-_-)" );
             return nullptr;
         }
+    }
+    // -------------------------------------------------------------------------------------
+    // storage
+    // -------------------------------------------------------------------------------------
+    else if( "storage" == parsedJson.get<string>(common_vars::cmd::COMMAND_TYPE) ){
+
+        // TODO: do ?
+    }
+    // -------------------------------------------------------------------------------------
+    // source
+    // -------------------------------------------------------------------------------------
+    else if( "source" == parsedJson.get<string>(common_vars::cmd::COMMAND_TYPE) ){
+
+        // TODO: do ?
     }
     else{
         VS_LOG_WARN << PRINT_HEADER << " unknown command type [" << parsedJson.get<string>(common_vars::cmd::COMMAND_TYPE) << "]" << endl;

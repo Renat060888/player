@@ -43,7 +43,10 @@ INCLUDEPATH +=  \
     $${ROOT_DIR}/microservice_common/ \
 
 SOURCES += \
+    analyze/datasource_editor.cpp \
     analyze/datasource_mixer.cpp \
+    analyze/datasource_descriptor.cpp \
+    analyze/datasource_reader.cpp \
     analyze/dispatcher_player_contoller.cpp \
     analyze/dispatcher_user.cpp \
     analyze/proxy_player_controller.cpp \
@@ -60,7 +63,6 @@ SOURCES += \
     player_controller.cpp \
     analyze/player_iterator.cpp \
     analyze/player_worker.cpp \
-    analyze/playing_datasource.cpp \
     communication/communication_gateway_facade_player.cpp \
     communication/unified_command_convertor_player.cpp \
     main.cpp \
@@ -78,11 +80,15 @@ SOURCES += \
     system/config_reader.cpp \
     system/path_locator.cpp \
     system/objrepr_bus_player.cpp \
-    system/system_environment_facade_player.cpp
+    system/system_environment_facade_player.cpp \
+    unit_tests/unit_tests.cpp
 
 HEADERS += \
     analyze/analytic_manager_facade.h \
+    analyze/datasource_editor.h \
     analyze/datasource_mixer.h \
+    analyze/datasource_descriptor.h \
+    analyze/datasource_reader.h \
     analyze/dispatcher_player_contoller.h \
     analyze/dispatcher_user.h \
     analyze/proxy_player_controller.h \
@@ -99,7 +105,6 @@ HEADERS += \
     player_controller.h \
     analyze/player_iterator.h \
     analyze/player_worker.h \
-    analyze/playing_datasource.h \
     common/common_types.h \
     common/common_utils.h \
     common/common_vars.h \
@@ -119,6 +124,7 @@ HEADERS += \
     system/config_reader.h \
     system/path_locator.h \
     system/objrepr_bus_player.h \
-    system/system_environment_facade_player.h
+    system/system_environment_facade_player.h \
+    unit_tests/unit_tests.h
 
 

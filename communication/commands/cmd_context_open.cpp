@@ -38,7 +38,7 @@ bool CommandContextOpen::exec(){
     string errMsg;
     if( userHasPermission(m_userId, (SIncomingCommandServices *)m_services, errMsg) ){
         const TContextId ctxId = OBJREPR_BUS.getContextIdByName( m_contextName );
-        const TContextId ctxId2 = 777;;
+        const TContextId ctxId2 = 777;
 
         DispatcherPlayerContoller * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
         if( playerDipatcher->requestPlayer(m_userId, ctxId2) ){
@@ -67,5 +67,9 @@ bool CommandContextOpen::exec(){
         return false;
     }
 }
+
+
+
+
 
 

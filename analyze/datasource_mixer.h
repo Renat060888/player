@@ -1,7 +1,7 @@
 #ifndef DATASOURCE_MIXER_H
 #define DATASOURCE_MIXER_H
 
-#include "playing_datasource.h"
+#include "datasource_reader.h"
 
 class DatasourceMixer
 {
@@ -9,7 +9,7 @@ public:
     struct SInitSettings {
         SInitSettings()
         {}
-        std::vector<PlayingDatasource *> datasources;
+        std::vector<DatasourceReader *> datasources;
     };
 
     struct SState {
@@ -35,7 +35,7 @@ public:
             , active(false)
         {}
         common_types::TLogicStep logicStepOffset;
-        PlayingDatasource * src;
+        DatasourceReader * src;
         bool active;
     };
 
@@ -49,16 +49,16 @@ public:
 
     bool read( common_types::TLogicStep _step );
     bool readInstant( common_types::TLogicStep _step );
-    const PlayingDatasource::TObjectsAtOneStep & getCurrentStep() const;
+    const DatasourceReader::TObjectsAtOneStep & getCurrentStep() const;
 
 private:
-    bool mixDatasources( std::vector<PlayingDatasource *> _datasources );
+    bool mixDatasources( std::vector<DatasourceReader *> _datasources );
 
 
     // data
     SState m_state;
     std::vector<SMixerTrack> m_mixerTracks;
-    PlayingDatasource::TObjectsAtOneStep m_currentStepFromDatasources;
+    DatasourceReader::TObjectsAtOneStep m_currentStepFromDatasources;
 
     // service
 

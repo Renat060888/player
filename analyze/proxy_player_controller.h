@@ -27,7 +27,7 @@ public:
     bool init( const SInitSettings & _settings );
     const SState & getState(){ return m_state; }
 
-    const common_types::SPlayingServiceState & getServiceState() override;
+    const common_types::SPlayingServiceState & getServiceState() const override;
 
     void start() override;
     void pause() override;

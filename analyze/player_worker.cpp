@@ -81,7 +81,7 @@ bool PlayerWorker::init( const SInitSettings & _settings ){
     return true;
 }
 
-bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vector<PlayingDatasource *> & _datasrc ){
+bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vector<DatasourceReader *> & _datasrc ){
 
     const vector<common_types::SPersistenceMetadata> ctxMetadatas = m_database->getPersistenceSetMetadata( _settings.ctxId );
     const common_types::SPersistenceMetadata & ctxMetadata = ctxMetadatas[ 0 ]; // TODO: segfault ?
@@ -91,9 +91,9 @@ bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vect
     // datasources ( video )
     for( const SPersistenceMetadataVideo & processedSensor : ctxMetadata.persistenceFromVideo ){
 
-        PlayingDatasource * datasource = new PlayingDatasource();
+        DatasourceReader * datasource = new DatasourceReader();
 
-        PlayingDatasource::SInitSettings settings;        
+        DatasourceReader::SInitSettings settings;
         settings.persistenceSetId = processedSensor.persistenceSetId;
         settings.updateStepMillisec = processedSensor.timeStepIntervalMillisec;
         settings.ctxId = _settings.ctxId;
@@ -102,7 +102,7 @@ bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vect
             continue;
         }
 
-        const PlayingDatasource::SState & state = datasource->getState();
+        const DatasourceReader::SState & state = datasource->getState();
 
         VS_LOG_TRACE << PRINT_HEADER
                      << " video datasrc on sensor " << processedSensor.recordedFromSensorId
@@ -117,9 +117,9 @@ bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vect
     // datasources ( dss )
     for( const SPersistenceMetadataDSS & processedSituation : ctxMetadata.persistenceFromDSS ){
 
-        PlayingDatasource * datasource = new PlayingDatasource();
+        DatasourceReader * datasource = new DatasourceReader();
 
-        PlayingDatasource::SInitSettings settings;
+        DatasourceReader::SInitSettings settings;
         settings.persistenceSetId = processedSituation.persistenceSetId;
         settings.updateStepMillisec = processedSituation.timeStepIntervalMillisec;
         if( ! datasource->init(settings) ){
@@ -127,7 +127,7 @@ bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vect
             continue;
         }
 
-        const PlayingDatasource::SState & state = datasource->getState();
+        const DatasourceReader::SState & state = datasource->getState();
 
         VS_LOG_TRACE << PRINT_HEADER
                      << " dss datasrc on data " << ( processedSituation.realData ? "REAL" : "SIMULATE" )
@@ -143,9 +143,9 @@ bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vect
     // datasources ( raw )
     for( const SPersistenceMetadataRaw & processedSensor : ctxMetadata.persistenceFromRaw ){
 
-        PlayingDatasource * datasource = new PlayingDatasource();
+        DatasourceReader * datasource = new DatasourceReader();
 
-        PlayingDatasource::SInitSettings settings;
+        DatasourceReader::SInitSettings settings;
         settings.persistenceSetId = processedSensor.persistenceSetId;
         settings.updateStepMillisec = processedSensor.timeStepIntervalMillisec;
         settings.ctxId = _settings.ctxId;
@@ -154,7 +154,7 @@ bool PlayerWorker::createDatasources( const SInitSettings & _settings, std::vect
             continue;
         }
 
-        const PlayingDatasource::SState & state = datasource->getState();
+        const DatasourceReader::SState & state = datasource->getState();
 
         VS_LOG_TRACE << PRINT_HEADER
                      << " raw datasrc on mission " << processedSensor.missionId
@@ -174,13 +174,13 @@ bool PlayerWorker::updatePlayingData(){
     VS_LOG_DBG << PRINT_HEADER << " update playing data >>" << endl;
 
     // 0 level - datasource
-    std::vector<PlayingDatasource *> datasources;
+    std::vector<DatasourceReader *> datasources;
     if( ! createDatasources(m_state.settings, datasources) ){
         VS_LOG_ERROR << PRINT_HEADER << " datasources creation failed" << endl;
         return false;
     }
 
-    std::vector<PlayingDatasource *> oldDatasources;
+    std::vector<DatasourceReader *> oldDatasources;
     if( m_datasourcesMixer.getState().inited ){
         oldDatasources = m_datasourcesMixer.getState().settings.datasources;
     }
@@ -217,7 +217,7 @@ bool PlayerWorker::updatePlayingData(){
 
     // remore out-dated resources
     if( ! oldDatasources.empty() ){
-        for( PlayingDatasource * datasrc : oldDatasources ){
+        for( DatasourceReader * datasrc : oldDatasources ){
             delete datasrc;
         }
     }
@@ -275,7 +275,7 @@ inline void PlayerWorker::emitStep( TLogicStep _step ){
 
     // read
     if( m_datasourcesMixer.read(_step) ){
-        const PlayingDatasource::TObjectsAtOneStep & objectsStep = m_datasourcesMixer.getCurrentStep();
+        const DatasourceReader::TObjectsAtOneStep & objectsStep = m_datasourcesMixer.getCurrentStep();
 #if 0
         if( ! objectsStep.empty() ){
             VS_LOG_TRACE << PRINT_HEADER
@@ -311,7 +311,7 @@ inline void PlayerWorker::emitStepInstant( TLogicStep _step ){
 
     // read
     if( m_datasourcesMixer.readInstant(_step) ){
-        const PlayingDatasource::TObjectsAtOneStep & objectsStep = m_datasourcesMixer.getCurrentStep();
+        const DatasourceReader::TObjectsAtOneStep & objectsStep = m_datasourcesMixer.getCurrentStep();
 
         if( ! objectsStep.empty() ){
             VS_LOG_TRACE << PRINT_HEADER
@@ -337,7 +337,7 @@ inline void PlayerWorker::emitStepInstant( TLogicStep _step ){
     }
 }
 
-inline void PlayerWorker::playObjects( const PlayingDatasource::TObjectsAtOneStep & _objectsStep ){
+inline void PlayerWorker::playObjects( const DatasourceReader::TObjectsAtOneStep & _objectsStep ){
 
     for( const common_types::SPersistenceTrajectory & object : _objectsStep ){
 

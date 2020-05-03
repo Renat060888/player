@@ -28,7 +28,7 @@ void ProxyPlayerController::setServiceState( const common_types::SPlayingService
     m_state.m_serviceState = _state;
 }
 
-const SPlayingServiceState & ProxyPlayerController::getServiceState(){
+const SPlayingServiceState & ProxyPlayerController::getServiceState() const {
     return m_state.m_serviceState;
 }
 

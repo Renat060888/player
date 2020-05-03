@@ -180,7 +180,7 @@ bool PlayerController::init( const SInitSettings & _settings ){
 void PlayerController::threadAsyncLaunch(){
 
     while( ! m_shutdownCalled ){
-        launch();
+        pingPlayerAgent();
 
         std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
@@ -188,10 +188,12 @@ void PlayerController::threadAsyncLaunch(){
 
 void PlayerController::launch(){
 
-    if( (common_utils::getCurrentTimeMillisec() - m_lastPingAtMillisec) > PING_TO_AGENT_INTERVAL_MILLISEC ){
-        m_lastPingAtMillisec = common_utils::getCurrentTimeMillisec();
+    assert( ! m_state.settings.async );
 
+    while( ! m_shutdownCalled ){
         pingPlayerAgent();
+
+        std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
 }
 
@@ -208,10 +210,10 @@ std::string PlayerController::createPingMessage(){
 
     Json::Value datasetsRecord;
     const DatasourceMixer::SState & mixerState = state->mixer->getState();
-    for( PlayingDatasource * datasrc : mixerState.settings.datasources ){
+    for( DatasourceReader * datasrc : mixerState.settings.datasources ){
 
         Json::Value rangesRecord;
-        for( const PlayingDatasource::SBeacon::SDataBlock * block : datasrc->getState().payloadDataRangesInfo ){
+        for( const DatasourceReader::SBeacon::SDataBlock * block : datasrc->getState().payloadDataRangesInfo ){
             Json::Value rangeRecord;
             rangeRecord["range_left"] = (long long)block->timestampRangeMillisec.first;
             rangeRecord["range_right"] = (long long)block->timestampRangeMillisec.second;
@@ -245,14 +247,18 @@ std::string PlayerController::createPingMessage(){
 
 void PlayerController::pingPlayerAgent(){
 
-    const string & pingMessage = createPingMessage();
-    m_pingRequest = m_networkClient->getRequestInstance();
-    m_pingRequest->sendMessageAsync( pingMessage );
-    return;
+    if( (common_utils::getCurrentTimeMillisec() - m_lastPingAtMillisec) > PING_TO_AGENT_INTERVAL_MILLISEC ){
+        m_lastPingAtMillisec = common_utils::getCurrentTimeMillisec();
 
-    // TODO: do reusable "ping request"
-    if( m_pingRequest->isPerforming() ){
+        const string & pingMessage = createPingMessage();
+        m_pingRequest = m_networkClient->getRequestInstance();
+        m_pingRequest->sendMessageAsync( pingMessage );
         return;
+
+        // TODO: do reusable "ping request"
+        if( m_pingRequest->isPerforming() ){
+            return;
+        }
     }
 }
 
