@@ -16,6 +16,7 @@ DEFINES += \
 #    SWITCH_LOGGER_ASTRA \
     SWITCH_LOGGER_SIMPLE \
 #    OBJREPR_LIBRARY_EXIST \
+    UNIT_TESTS_GOOGLE \
 
 LIBS += \
     -lprotobuf \
@@ -34,6 +35,12 @@ contains( DEFINES, OBJREPR_LIBRARY_EXIST ){
 LIBS += \
     -lunilog \
     -lobjrepr
+}
+
+contains( DEFINES, UNIT_TESTS_GOOGLE ){
+    message("connect 'gtests' library")
+LIBS += \
+    -lgtest
 }
 
 # NOTE: paths for dev environment ( all projects sources in one dir )

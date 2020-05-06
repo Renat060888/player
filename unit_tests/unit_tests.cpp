@@ -1,4 +1,6 @@
 
+#include <gtest/gtest.h>
+
 #include <microservice_common/system/logger.h>
 
 #include "system/config_reader.h"
@@ -7,12 +9,14 @@
 
 using namespace std;
 
-UnitTests::UnitTests()
+UnitTests::UnitTests( int _argc, char ** _argv )
 {
-
+    ::testing::InitGoogleTest( & _argc, _argv );
 }
 
 bool UnitTests::run(){
+
+    return RUN_ALL_TESTS();
 
     static constexpr const char * PRINT_HEADER = "UnitTest:";
 

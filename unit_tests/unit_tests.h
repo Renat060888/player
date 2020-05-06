@@ -5,7 +5,7 @@
 class UnitTests
 {
 public:
-    UnitTests();
+    UnitTests( int _argc, char ** _argv );
 
     bool run();
 };

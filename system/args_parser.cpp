@@ -17,8 +17,8 @@ bpo::options_description ArgsParser::getArgumentsDescrTemplateMethodPart() {
             ("start-agent", "start player agent")
             ("start-contoller", "start player controller")
             ("stop", "stop server")
-            ("player-id", bpo::value<std::string>(), "invalid_id")
-            ("context-id", bpo::value<common_types::TContextId>(), 0)
+            ("player-id", bpo::value<std::string>(), "player id for controller mode")
+            ("context-id", bpo::value<common_types::TContextId>(), "context id that controller must open")
             ;
 
     return desc;

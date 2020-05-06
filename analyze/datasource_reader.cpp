@@ -409,8 +409,7 @@ bool DatasourceReader::loadSingleFrame( common_types::TLogicStep _logicStep, TOb
     if( iter != m_timelineBeacons.end() ){
         const SBeacon & beacon = iter->second;
 
-        SPersistenceSetFilter filter;
-        filter.persistenceSetId = m_settings.persistenceSetId;
+        SPersistenceSetFilter filter( m_settings.persistenceSetId );
 
         getActualData( beacon, _logicStep, filter.sessionNum, filter.minLogicStep );
         if( common_vars::INVALID_SESSION_NUM == filter.sessionNum ){
@@ -445,8 +444,7 @@ bool DatasourceReader::loadPackage( int64_t _currentPackHeadStep, std::vector<TO
 
             // payload area
             if( ! block->empty ){
-                SPersistenceSetFilter filter;
-                filter.persistenceSetId = m_settings.persistenceSetId;
+                SPersistenceSetFilter filter( m_settings.persistenceSetId );
                 filter.sessionNum = block->sesNum;
                 filter.minLogicStep = block->logicStepRange.first;
                 filter.maxLogicStep = block->logicStepRange.second;
