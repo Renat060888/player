@@ -163,34 +163,7 @@ static bool executeShellCommand(){
     return true;
 }
 
-// TODO: research this topic
-struct Base {
-    int b;
-
-    bool operator==( const Base & _rhs ){
-        return ( this->b == _rhs.b );
-    }
-};
-
-struct Derivative : Base {
-    int d;
-
-    bool operator==( const Derivative & _rhs ){
-        return ( Base::operator==( _rhs ) && (this->d == _rhs.d) );
-    }
-};
-
 int main( int argc, char ** argv, char ** env ){
-
-    Derivative d1;
-    d1.b = 1;
-    d1.d = 2;
-
-    Derivative d2;
-    d2.b = 3;
-    d2.d = 4;
-
-    const bool equal = ( d1 == d2 );
 
     if( ! initSingletons(argc, argv, env) ){
         PRELOG_ERR << "============================ PLAYER START FAILED (singletons area) ============================" << endl;
