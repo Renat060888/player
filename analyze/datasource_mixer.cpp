@@ -51,7 +51,7 @@ const DatasourceMixer::SState & DatasourceMixer::getState(){
 
         m_state.globalDataRangeMillisec = state.globalTimeRangeMillisec;
         m_state.globalStepCount = state.stepsCount;
-        m_state.globalStepUpdateMillisec = state.settings->updateStepMillisec;
+        m_state.globalStepUpdateMillisec = state.settings.updateStepMillisec;
     }
     else{
         std::sort( m_state.settings.datasources.begin(), m_state.settings.datasources.end(), FunctorCompareDatasources() );
@@ -71,7 +71,7 @@ const DatasourceMixer::SState & DatasourceMixer::getState(){
                 m_state.globalDataRangeMillisec.second = state.globalTimeRangeMillisec.second;
             }
 
-            totalUpdateStepMillisec += state.settings->updateStepMillisec;
+            totalUpdateStepMillisec += state.settings.updateStepMillisec;
         }
 
         m_state.globalStepUpdateMillisec = ( totalUpdateStepMillisec / m_state.settings.datasources.size() ); // avg
@@ -109,7 +109,7 @@ bool DatasourceMixer::mixDatasources( std::vector<DatasourceReader *> _datasourc
     //
     const DatasourceReader::SState & state = firstDatasource->getState();
     const int64_t firstDatasrcLeftBoundMillisec = state.globalTimeRangeMillisec.first;
-    const int64_t updateStepMillisec = state.settings->updateStepMillisec;
+    const int64_t updateStepMillisec = state.settings.updateStepMillisec;
 
     // mix
     for( std::size_t i = 1; i < _datasources.size(); i++ ){

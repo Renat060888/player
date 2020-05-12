@@ -30,8 +30,7 @@ DatasourceReader::~DatasourceReader()
 
 bool DatasourceReader::init( const SInitSettings & _settings ){
 
-    m_settings = _settings;
-    m_state.settings = & m_settings;
+    m_state.settings = _settings;
 
     //
     m_database = DatabaseManagerBase::getInstance();
@@ -119,7 +118,7 @@ bool DatasourceReader::createBeacons( std::unordered_map<common_types::TLogicSte
 
     destroyBeacons( _beacons );
 
-    const std::vector<SEventsSessionInfo> sessionsInfo = m_database->getPersistenceSetSessions( m_settings.persistenceSetId );
+    const std::vector<SEventsSessionInfo> sessionsInfo = m_database->getPersistenceSetSessions( m_state.settings.persistenceSetId );
     const std::vector<SEventsSessionInfo> correctedSessions = checkSessionsForEmptyFrames( sessionsInfo );
 
     std::vector<SEventsSessionInfo>::size_type currentSessionIdx = 0;
@@ -277,12 +276,12 @@ std::vector<DatasourceReader::SBeacon::SDataBlock *> DatasourceReader::createBlo
                 _currentPassedPoint.logicStepCounter = 0;
                 _currentPassedPoint.sesNum = nextSession->number;
 
-                const int64_t differenceBetweenAdjacentTimestamps = m_settings.updateStepMillisec;
+                const int64_t differenceBetweenAdjacentTimestamps = m_state.settings.updateStepMillisec;
                 const int64_t timeBetweenSessions = nextSession->minTimestampMillisec
                                                     - prevSession->maxTimestampMillisec
                                                     - differenceBetweenAdjacentTimestamps;
 
-                _emptyStepCount = timeBetweenSessions / m_settings.updateStepMillisec;
+                _emptyStepCount = timeBetweenSessions / m_state.settings.updateStepMillisec;
             }
             else{
                 // sessions is out
@@ -409,7 +408,7 @@ bool DatasourceReader::loadSingleFrame( common_types::TLogicStep _logicStep, TOb
     if( iter != m_timelineBeacons.end() ){
         const SBeacon & beacon = iter->second;
 
-        SPersistenceSetFilter filter( m_settings.persistenceSetId );
+        SPersistenceSetFilter filter( m_state.settings.persistenceSetId );
 
         getActualData( beacon, _logicStep, filter.sessionNum, filter.minLogicStep );
         if( common_vars::INVALID_SESSION_NUM == filter.sessionNum ){
@@ -444,7 +443,7 @@ bool DatasourceReader::loadPackage( int64_t _currentPackHeadStep, std::vector<TO
 
             // payload area
             if( ! block->empty ){
-                SPersistenceSetFilter filter( m_settings.persistenceSetId );
+                SPersistenceSetFilter filter( m_state.settings.persistenceSetId );
                 filter.sessionNum = block->sesNum;
                 filter.minLogicStep = block->logicStepRange.first;
                 filter.maxLogicStep = block->logicStepRange.second;
@@ -461,8 +460,9 @@ bool DatasourceReader::loadPackage( int64_t _currentPackHeadStep, std::vector<TO
                         readCell.push_back( object );
                     }
                     else{
+                        positionCounter += object.logicTime - currentLogicStep;
                         currentLogicStep = object.logicTime;
-                        positionCounter++;
+//                        positionCounter++;
                         TObjectsAtOneStep & readCell = _steps[ positionCounter ];
                         readCell.push_back( object );
                     }

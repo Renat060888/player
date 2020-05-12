@@ -5,6 +5,7 @@
 #include <microservice_common/communication/amqp_controller.h>
 
 #include "common/common_utils.h"
+#include "system/objrepr_bus_player.h"
 #include "system/config_reader.h"
 #include "player_controller.h"
 
@@ -151,6 +152,19 @@ bool PlayerController::init( const SInitSettings & _settings ){
 
     m_state.settings = _settings;
 
+#if 0 // NOTE: in separate process mode
+    // objrepr-bus
+    ObjreprBus::SInitSettings busSettings;
+    busSettings.objreprConfigPath = CONFIG_PARAMS.baseParams.OBJREPR_CONFIG_PATH;
+    busSettings.initialContextName = OBJREPR_BUS.getContextNameById( _settings.ctxId );
+    if( ! OBJREPR_BUS.init(busSettings) ){
+        VS_LOG_CRITICAL << "objrepr init failed: " << OBJREPR_BUS.getLastError() << endl;
+        return false;
+    }
+
+    // TODO: register in GDM
+#endif
+
     // worker
     PlayerWorker::SInitSettings workerSettings;
     workerSettings.ctxId = _settings.ctxId;
@@ -221,7 +235,7 @@ std::string PlayerController::createPingMessage(){
         }
 
         Json::Value dsRecord;
-        dsRecord["unique_id"] = (long long)datasrc->getState().settings->persistenceSetId;
+        dsRecord["unique_id"] = (long long)datasrc->getState().settings.persistenceSetId;
         dsRecord["real"] = true;
         dsRecord["ranges"] = rangesRecord;
         datasetsRecord.append( dsRecord );

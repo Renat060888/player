@@ -53,7 +53,6 @@ public:
     struct SState {
         SState()
             : stepsCount(0)
-            , settings(nullptr)
         {}
         // original data
         std::vector<SBeacon::SDataBlock *> dataRangesInfo;
@@ -62,7 +61,7 @@ public:
         common_types::TTimeRangeMillisec globalTimeRangeMillisec;
         int64_t stepsCount;
         // refs
-        SInitSettings * settings;
+        SInitSettings settings;
     };
 
     DatasourceReader();
@@ -80,6 +79,7 @@ public:
     bool read( common_types::TLogicStep _step );
     bool readInstant( common_types::TLogicStep _step );
     const TObjectsAtOneStep & getCurrentStep();
+
 
 private:
     // reading
@@ -108,7 +108,6 @@ private:
 
 
     // data
-    SInitSettings m_settings;
     SState m_state;
     std::vector<TObjectsAtOneStep> m_currentPlayingFrame;
     TObjectsAtOneStep m_currentInstantPlayingFrame;
