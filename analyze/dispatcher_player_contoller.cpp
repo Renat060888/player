@@ -10,6 +10,19 @@ using namespace common_types;
 static constexpr const char * PRINT_HEADER = "PlayerDispatcher:";
 static constexpr int64_t PLAYER_TIMEOUT_MILLISEC = 30000;
 
+struct SPlayerDescriptor {
+    SPlayerDescriptor()
+        : lastPongMillisec(0)
+        , player(nullptr)
+        , editablePlayer(nullptr)
+    {}
+    common_types::TPlayerId id;
+    common_types::TUserId userId;
+    int64_t lastPongMillisec;
+    common_types::IPlayerService * player;
+    common_types::IEditablePlayer * editablePlayer;
+};
+
 DispatcherPlayerContoller::DispatcherPlayerContoller()
 {
 
@@ -28,7 +41,7 @@ bool DispatcherPlayerContoller::init( const SInitSettings & _settings ){
     return true;
 }
 
-// functors
+// > functors
 class FunctorIPlayerService {
 public:
     FunctorIPlayerService( TPlayerId _playerId )
@@ -48,12 +61,13 @@ public:
         : playerId(_playerId)
     {}
 
-    bool operator()( DispatcherPlayerContoller::SPlayerDescriptor * _rhs ){
+    bool operator()( SPlayerDescriptor * _rhs ){
         return ( this->playerId == _rhs->id );
     }
 
     TPlayerId playerId;
 };
+// < functors
 
 void DispatcherPlayerContoller::runClock(){
 
@@ -136,6 +150,8 @@ void DispatcherPlayerContoller::releasePlayer( const common_types::TPlayerId & _
         for( auto iter = m_realPlayerControllersForTest.begin(); iter != m_realPlayerControllersForTest.end(); ){
             PlayerController * pc = ( * iter );
             if( pc->getState().settings.id == _id ){
+                delete pc;
+                pc = nullptr;
                 m_realPlayerControllersForTest.erase( iter );
                 break;
             }

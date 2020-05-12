@@ -9,6 +9,8 @@
 // TODO: temp ( must be in separate process )
 #include "player_controller.h"
 
+class SPlayerDescriptor;
+
 class DispatcherPlayerContoller
 {
     friend class CommandPlayerControllerPing;
@@ -26,19 +28,6 @@ public:
     struct SState {
         SInitSettings settings;
         std::string lastError;
-    };
-
-    struct SPlayerDescriptor {
-        SPlayerDescriptor()
-            : lastPongMillisec(0)
-            , player(nullptr)
-            , editablePlayer(nullptr)
-        {}
-        common_types::TPlayerId id;
-        common_types::TUserId userId;
-        int64_t lastPongMillisec;
-        common_types::IPlayerService * player;
-        common_types::IEditablePlayer * editablePlayer;
     };
 
     DispatcherPlayerContoller();

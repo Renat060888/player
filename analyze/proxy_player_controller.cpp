@@ -108,7 +108,6 @@ bool ProxyPlayerController::stepForward(){
 
 bool ProxyPlayerController::stepBackward(){
 
-
     // TODO: I think it's redundant
 }
 
@@ -194,6 +193,7 @@ bool ProxyPlayerController::playFromPosition( int64_t _stepMillisec ){
 
 bool ProxyPlayerController::updatePlayingData(){
 
+    // TODO: do
 }
 
 bool ProxyPlayerController::increasePlayingSpeed(){
@@ -219,10 +219,12 @@ bool ProxyPlayerController::increasePlayingSpeed(){
 
 bool ProxyPlayerController::decreasePlayingSpeed(){
 
+    // TODO: do
 }
 
 void ProxyPlayerController::normalizePlayingSpeed(){
 
+    // TODO: do
 }
 
 

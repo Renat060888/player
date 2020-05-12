@@ -97,7 +97,7 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
     if( "service" == parsedJson.get<string>(common_vars::cmd::COMMAND_TYPE) ){
         if( "ping" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
             PCommandUserPing cmd1 = std::make_shared<CommandUserPing>( & m_commandServices );
-            cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd1->m_userState.userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
             cmd = cmd1;
         }
         else if( "ping_from_player" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){

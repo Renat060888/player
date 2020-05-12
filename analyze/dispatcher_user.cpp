@@ -37,14 +37,19 @@ void DispatcherUser::runClock(){
 
     for( auto iter = m_users.begin(); iter != m_users.end(); ){
         PUserState state = ( * iter );
-        if( (common_utils::getCurrentTimeMillisec() - state->lastPingMillisec) > USER_TIMEOUT_MILLISEC ){
 
+        if( (common_utils::getCurrentTimeMillisec() - state->lastPingMillisec) > USER_TIMEOUT_MILLISEC ){
             VS_LOG_WARN << PRINT_HEADER << " user disappeared [" << state->userId << "]" << endl;
+
             iter = m_users.erase( iter );
             m_usersById.erase( state->userId );
 
             // NOTE: remove record from WAL - ONLY if user is missing
             m_state.settings.serviceWriteAheadLogger->closeUserRegistration( state->userId );
+
+            for( IUserDispatcherObserver * observer : m_observers ){
+                observer->callbackUserOnline( state->userId, false );
+            }
         }
         else{
             ++iter;
@@ -133,6 +138,11 @@ common_types::TUserId DispatcherUser::registerUser( std::string _userIp, common_
     userReg.userPid = state->userPid;
     userReg.registeredAtDateTime = common_utils::getCurrentDateTimeStr();
     const bool rt = m_state.settings.serviceWriteAheadLogger->openUserRegistration( userReg );
+
+    // notify
+    for( IUserDispatcherObserver * observer : m_observers ){
+        observer->callbackUserOnline( state->userId, true );
+    }
 
     VS_LOG_INFO << PRINT_HEADER << " register new user [" << state->userId << "]" << endl;
     return state->userId;

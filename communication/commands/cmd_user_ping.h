@@ -15,7 +15,7 @@ public:
 
 
 private:
-    common_types::TUserId m_userId;
+    common_types::SUserState m_userState;
 
 
 

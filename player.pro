@@ -13,10 +13,10 @@ QMAKE_CXXFLAGS += -Wno-unused-variable
 
 # TODO: add defines to logger, system monitor, restbed webserver, database, etc...
 DEFINES += \
-#    SWITCH_LOGGER_ASTRA \
-    SWITCH_LOGGER_SIMPLE \
-#    OBJREPR_LIBRARY_EXIST \
-    UNIT_TESTS_GOOGLE \
+#    SWITCH_LOGGER_SIMPLE \
+    SWITCH_LOGGER_ASTRA \
+    OBJREPR_LIBRARY_EXIST \
+#    UNIT_TESTS_GOOGLE \
 
 LIBS += \
     -lprotobuf \
@@ -88,7 +88,13 @@ SOURCES += \
     system/path_locator.cpp \
     system/objrepr_bus_player.cpp \
     system/system_environment_facade_player.cpp \
-    unit_tests/unit_tests.cpp
+
+contains( DEFINES, UNIT_TESTS_GOOGLE ){
+    message("connect 'gtests' library")
+SOURCES += \
+    unit_tests/unit_tests.cpp \
+    unit_tests/datasource_reader_test.cpp
+}
 
 HEADERS += \
     analyze/analytic_manager_facade.h \
@@ -132,6 +138,12 @@ HEADERS += \
     system/path_locator.h \
     system/objrepr_bus_player.h \
     system/system_environment_facade_player.h \
-    unit_tests/unit_tests.h
+    unit_tests/unit_tests.h \
 
+contains( DEFINES, UNIT_TESTS_GOOGLE ){
+    message("connect 'gtests' library")
+HEADERS += \
+    unit_tests/unit_tests.h \
+    unit_tests/datasource_reader_test.h
+}
 

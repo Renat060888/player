@@ -117,7 +117,7 @@ static bool executeShellCommand(){
             }
         }
     }
-    if( ARGS_PARSER.isKeyExist(EPlayerArguments::SHELL_CMD_START_PLAYER_CONTROLLER) ){
+    else if( ARGS_PARSER.isKeyExist(EPlayerArguments::SHELL_CMD_START_PLAYER_CONTROLLER) ){
 
         // launch controller
         {

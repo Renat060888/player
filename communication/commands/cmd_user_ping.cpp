@@ -81,16 +81,14 @@ CommandUserPing::CommandUserPing( common_types::SIncomingCommandServices * _serv
 bool CommandUserPing::exec(){
 
     string errMsg;
-    if( userHasPermission(m_userId, (SIncomingCommandServices *)m_services, errMsg) ){
+    if( userHasPermission(m_userState.userId, (SIncomingCommandServices *)m_services, errMsg) ){
         // take user snapshot
         DispatcherUser * du = ((SIncomingCommandServices *)m_services)->analyticManager->getUserDispatcher();
-        common_types::SUserState state;
-        state.userId = m_userId;
-        du->updateUserState( state );
+        du->updateUserState( m_userState );
 
         // reflect to user his player state
         DispatcherPlayerContoller * dpc = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
-        IPlayerService * player = dpc->getPlayerByUser( m_userId );
+        IPlayerService * player = dpc->getPlayerByUser( m_userState.userId );
         if( player ){
             Json::Value rootRecord;
             rootRecord[ "cmd_name" ] = "pong";
