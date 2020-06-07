@@ -9,7 +9,7 @@ public:
     struct SInitSettings {
         SInitSettings()
         {}
-        std::vector<DatasourceReader *> datasources;
+        std::vector<DatasourceReader *> datasourceReaders;
     };
 
     struct SState {
@@ -31,28 +31,28 @@ public:
     struct SMixerTrack {
         SMixerTrack()
             : logicStepOffset(0)
-            , src(nullptr)
+            , datasrcReader(nullptr)
             , active(false)
         {}
         common_types::TLogicStep logicStepOffset;
-        DatasourceReader * src;
+        DatasourceReader * datasrcReader;
         bool active;
     };
 
     DatasourceMixer();
     ~DatasourceMixer();
 
-//    DatasourceMixer( const DatasourceMixer & _rhs );
-
     bool init( const SInitSettings & _settings );
-    const SState & getState();
+    const SState & getState() const;
 
     bool read( common_types::TLogicStep _step );
     bool readInstant( common_types::TLogicStep _step );
     const DatasourceReader::TObjectsAtOneStep & getCurrentStep() const;
 
+
 private:
     bool mixDatasources( std::vector<DatasourceReader *> _datasources );
+    void fillState( DatasourceMixer::SState & _state );
 
 
     // data

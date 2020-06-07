@@ -121,11 +121,13 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
             PCommandContextOpen cmd1 = std::make_shared<CommandContextOpen>( & m_commandServices );
             cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
             cmd1->m_contextName = parsedJson.get<string>(common_vars::cmd::CONTEXT_NAME);
+            cmd1->m_requestFullText = _request->getIncomingMessage();
             cmd = cmd1;
         }
         else if( "context_close" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
             PCommandContextClose cmd1 = std::make_shared<CommandContextClose>( & m_commandServices );
             cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
+            cmd1->m_requestFullText = _request->getIncomingMessage();
             cmd = cmd1;
         }
         else{
@@ -182,7 +184,7 @@ PCommand CommandFactory::createCommand( PEnvironmentRequest _request ){
         else if( "play_step" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){
             PCommandPlayerStep cmd1 = std::make_shared<CommandPlayerStep>( & m_commandServices );
             cmd1->m_userId = parsedJson.get<string>(common_vars::cmd::USER_ID);
-            cmd1->stepForward = parsedJson.get<bool>("forward");
+            cmd1->stepForward = parsedJson.get<bool>("step_forward");
             cmd = cmd1;
         }
         else if( "play_stop" == parsedJson.get<string>(common_vars::cmd::COMMAND_NAME) ){

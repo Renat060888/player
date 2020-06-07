@@ -36,7 +36,7 @@ bool CommandPlayerFromPos::exec(){
 
     string errMsg;
     if( userHasPermission(m_userId, (SIncomingCommandServices *)m_services, errMsg) ){
-        DispatcherPlayerContoller * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
+        DispatcherPlayer * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
         IPlayerService * player = playerDipatcher->getPlayerByUser( m_userId );
         if( player ){
             player->playFromPosition( m_positionMillisec );

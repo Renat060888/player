@@ -5,6 +5,7 @@
 #include "communication_gateway_facade_player.h"
 #include "command_factory.h"
 #include "system/config_reader.h"
+#include "system/path_locator.h"
 
 using namespace std;
 
@@ -33,6 +34,8 @@ bool CommunicationGatewayFacadePlayer::init( const SInitSettings & _settings ){
     m_settings.paramsForInitialAmqp.port = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_SERVER_PORT;
     m_settings.paramsForInitialAmqp.login = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_LOGIN;
     m_settings.paramsForInitialAmqp.pass = CONFIG_PARAMS.baseParams.COMMUNICATION_AMQP_PASS;
+    m_settings.paramsForInitialShell.enable = true;
+    m_settings.paramsForInitialShell.socketName = PATH_LOCATOR.getShellImitationDomainSocket();
     m_settings.specParams.factory = new CommandFactory( m_settings.services );
 
     if( ! CommunicationGatewayFacade::init(m_settings) ){

@@ -12,6 +12,7 @@ public:
     struct SInitSettings {
         SInitSettings()
             : async(false)
+            , ctxId(common_vars::INVALID_CONTEXT_ID)
         {}
         bool async;
         common_types::TPlayerId id;
@@ -57,6 +58,8 @@ private:
     bool processMsgDecreasePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent );
     void processMsgNormalizePlayingSpeed( const protocol_player_agent_to_controller::MessagePlayerAgent & _msgAgent );
 
+    void processMsgShutdownController();
+
     // data
     SState m_state;
     PlayerWorker m_worker;
@@ -65,6 +68,7 @@ private:
 
     // service
     PNetworkClient m_networkClient;
+    PNetworkProvider m_networkProvider;
     PEnvironmentRequest m_pingRequest;
     std::thread * m_trAsyncLaunch;
     protocol_player_agent_to_controller::ProtobufPlayerAgentToController m_protobufAgentToController;

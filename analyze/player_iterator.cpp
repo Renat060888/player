@@ -2,12 +2,11 @@
 #include <microservice_common/system/logger.h>
 
 #include "common/common_utils.h"
-
 #include "player_iterator.h"
 
 using namespace std;
 
-static constexpr const char * PRINT_HEADER = "PlayIter:";
+static constexpr const char * PRINT_HEADER = "PlayIterator:";
 static constexpr std::array<int64_t, 8> UPDATE_TIME_STEPS_MILLISEC = { 8000, 4000, 2000, 1000, 500, 250, 100, 50 };
 
 PlayerStepIterator::PlayerStepIterator()
@@ -44,7 +43,7 @@ void PlayerStepIterator::printState(){
 
 bool PlayerStepIterator::init( SInitSettings _settings ){
 
-    m_settings = _settings;
+    m_state.m_settings = _settings;
 
     m_state.m_globalTimeRangeMillisec = _settings._globalRange;
     m_state.m_currentTimeRangeMillisec = m_state.m_globalTimeRangeMillisec;
@@ -69,37 +68,43 @@ bool PlayerStepIterator::init( SInitSettings _settings ){
 //        return false;
 //    }
 
-    m_state.m_updateGenerationMillisec     = _settings._stepUpdateMillisec;
-    m_state.m_updateDelayMillisec     = _settings._stepUpdateMillisec;
-
+    bool stepTimeValid = false;
     for( int i = 0; i < UPDATE_TIME_STEPS_MILLISEC.size(); i++ ){
-        if( UPDATE_TIME_STEPS_MILLISEC[ i ] == m_state.m_updateGenerationMillisec ){
+        if( UPDATE_TIME_STEPS_MILLISEC[ i ] == _settings._stepUpdateMillisec ){
             m_currentUpdateTimeStepIdx = i;
             m_originalUpdateTimeStepIdx = i;
+
+            m_state.m_updateGenerationMillisec = UPDATE_TIME_STEPS_MILLISEC[ i ];
+            m_state.m_updateDelayMillisec = UPDATE_TIME_STEPS_MILLISEC[ i ];
+
+            stepTimeValid = true;
             break;
         }
     }
 
-    printState();
-    VS_LOG_INFO << PRINT_HEADER << " init success" << endl;
+    assert( stepTimeValid && "step time must be valid (one of allowed values)" );
 
+    printState();
+
+    VS_LOG_INFO << PRINT_HEADER << " init success" << endl;
     return true;
 }
 
 bool PlayerStepIterator::increaseSpeed(){
 
-    if( ESpeedPolicy::TIME_STEP_CHANGE == m_settings.speedPolicy ){
+    if( ESpeedPolicy::TIME_STEP_CHANGE == m_state.m_settings.speedPolicy ){
         if( (m_currentUpdateTimeStepIdx+1) == UPDATE_TIME_STEPS_MILLISEC.size() ){
-            m_lastError = "min step value (millisec): " + to_string( UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ] );
+            m_state.m_lastError = "min step value (millisec): " + to_string( UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ] );
             return false;
         }
         else{
             m_currentUpdateTimeStepIdx++;
+            VS_LOG_INFO << PRINT_HEADER << " increase speed (time mode, ms): " << UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ] << endl;
             m_state.m_updateDelayMillisec = UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ];
             return true;
         }
     }
-    else if( ESpeedPolicy::LOGIC_STEP_THINNING == m_settings.speedPolicy ){
+    else if( ESpeedPolicy::LOGIC_STEP_THINNING == m_state.m_settings.speedPolicy ){
         m_stepSize *= 2;
     }
     else{
@@ -111,18 +116,19 @@ bool PlayerStepIterator::increaseSpeed(){
 
 bool PlayerStepIterator::decreaseSpeed(){
 
-    if( ESpeedPolicy::TIME_STEP_CHANGE == m_settings.speedPolicy ){
+    if( ESpeedPolicy::TIME_STEP_CHANGE == m_state.m_settings.speedPolicy ){
         if( 0 == m_currentUpdateTimeStepIdx ){
-            m_lastError = "max step value (millisec): " + to_string( UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ] );
+            m_state.m_lastError = "max step value (millisec): " + to_string( UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ] );
             return false;
         }
         else{
             m_currentUpdateTimeStepIdx--;
+            VS_LOG_INFO << PRINT_HEADER << " decrease speed (time mode, ms): " << UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ] << endl;
             m_state.m_updateDelayMillisec = UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ];
             return true;
         }
     }
-    else if( ESpeedPolicy::LOGIC_STEP_THINNING == m_settings.speedPolicy ){
+    else if( ESpeedPolicy::LOGIC_STEP_THINNING == m_state.m_settings.speedPolicy ){
         if( m_stepSize != 1 ){
             m_stepSize /= 2;
         }
@@ -137,6 +143,7 @@ bool PlayerStepIterator::decreaseSpeed(){
 void PlayerStepIterator::normalizeSpeed(){
 
     m_currentUpdateTimeStepIdx = m_originalUpdateTimeStepIdx;
+    VS_LOG_INFO << PRINT_HEADER << " normalize speed (time mode, ms): " << UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ] << endl;
     m_state.m_updateDelayMillisec = UPDATE_TIME_STEPS_MILLISEC[ m_currentUpdateTimeStepIdx ];
 }
 
@@ -175,13 +182,13 @@ void PlayerStepIterator::resetStep(){
     m_state.m_currentPlayStep = m_state.m_stepBound.first;
 }
 
-void PlayerStepIterator::setPlayMode( const EPlayMode _playMode ){
+void PlayerStepIterator::setDirectionMode( const EPlayMode _playMode ){
 
-    m_state.m_playMode = _playMode;
+    m_state.m_directionMode = _playMode;
 }
 
 void PlayerStepIterator::setLoopMode( bool _loop ){
-    m_state.loop = _loop;
+    m_state.m_loopMode = _loop;
 }
 
 bool PlayerStepIterator::setStep( int64_t _stepNum ){
@@ -203,7 +210,7 @@ bool PlayerStepIterator::setStep( int64_t _stepNum ){
 
 bool PlayerStepIterator::isNextStepExist(){
 
-    if( ! m_state.loop ){
+    if( ! m_state.m_loopMode ){
         return ( (m_state.m_currentPlayStep + m_stepSize ) < m_state.m_stepBound.second );
     }
     else{
@@ -219,7 +226,7 @@ bool PlayerStepIterator::isNextStepExist(){
 
 bool PlayerStepIterator::isPrevStepExist(){
 
-    if( ! m_state.loop ){
+    if( ! m_state.m_loopMode ){
         return ( m_state.m_currentPlayStep > m_state.m_stepBound.first );
     }
     else{
@@ -254,13 +261,9 @@ bool PlayerStepIterator::tryPrevStep(){
     return true;
 }
 
-int64_t PlayerStepIterator::getCurrentStep(){
-    return m_state.m_currentPlayStep;
-}
-
 bool PlayerStepIterator::goNextStep(){
 
-    switch( m_state.m_playMode ){
+    switch( m_state.m_directionMode ){
     case EPlayMode::NORMAL: {
         return tryNextStep();
     }
@@ -268,7 +271,7 @@ bool PlayerStepIterator::goNextStep(){
         return tryPrevStep();
     }
     default: {
-        VS_LOG_ERROR << PRINT_HEADER << " go next step - unknown play mode " << (int)m_state.m_playMode << endl;
+        VS_LOG_ERROR << PRINT_HEADER << " go next step - unknown play mode " << (int)m_state.m_directionMode << endl;
         return false;
     }
     }

@@ -5,45 +5,30 @@
 
 #include "common/common_vars.h"
 #include "system/config_reader.h"
+#include "datasource_descriptor.h"
 #include "datasource_reader.h"
 
 using namespace std;
 using namespace common_types;
 
-static constexpr const char * PRINT_HEADER = "DataSrc:";
-static constexpr int16_t PACKAGE_SIZE = 200;
+static constexpr const char * PRINT_HEADER = "DatasrcReader:";
+static constexpr int16_t PACKAGE_SIZE = 10;
 
 DatasourceReader::DatasourceReader()
     : m_currentPackHeadStep(0)
     , m_currentReadStep(0)
-    , m_database(nullptr)
 {
     m_currentPlayingFrame.resize( PACKAGE_SIZE );
 }
 
 DatasourceReader::~DatasourceReader()
 {
-    DatabaseManagerBase::destroyInstance( m_database );
-
     destroyBeacons( m_timelineBeacons );
 }
 
 bool DatasourceReader::init( const SInitSettings & _settings ){
 
     m_state.settings = _settings;
-
-    //
-    m_database = DatabaseManagerBase::getInstance();
-
-    DatabaseManagerBase::SInitSettings settings;
-    settings.host = CONFIG_PARAMS.baseParams.MONGO_DB_ADDRESS;
-    settings.databaseName = CONFIG_PARAMS.baseParams.MONGO_DB_NAME;
-    if( ! m_database->init(settings) ){
-        return false;
-    }
-
-    // in order to update knowledge of the content in database
-    m_database->getPersistenceSetMetadata( _settings.ctxId );
 
     //
     if( ! createBeacons(m_timelineBeacons) ){
@@ -86,30 +71,56 @@ void DatasourceReader::fillState( const std::unordered_map<common_types::TLogicS
         const SBeacon & beacon = _beacons.find( step )->second;
         _state.dataRangesInfo.insert( _state.dataRangesInfo.end(), beacon.dataBlocks.begin(), beacon.dataBlocks.end() );
     }
-}
-
-const DatasourceReader::SState & DatasourceReader::getState(){
 
     //
     m_state.stepsCount = 0;
     m_state.payloadDataRangesInfo.clear();
+
+    if( m_state.dataRangesInfo.empty() ){
+        return;
+    }
+
+    // payload raw blocks
     for( SBeacon::SDataBlock * block : m_state.dataRangesInfo ){
         if( block->empty ){
             m_state.stepsCount += block->emptyStepsCount;
         }
         else{
             m_state.stepsCount += ( block->logicStepRange.second - block->logicStepRange.first ) + 1;
-
-            //
-            m_state.payloadDataRangesInfo.push_back( block );
-        }        
+            m_state.payloadDataRangesInfo.push_back( block );            
+        }
     }
 
-    //
-    if( ! m_state.dataRangesInfo.empty() ){
-        m_state.globalTimeRangeMillisec.first = m_state.dataRangesInfo.front()->timestampRangeMillisec.first;
-        m_state.globalTimeRangeMillisec.second = m_state.dataRangesInfo.back()->timestampRangeMillisec.second;
+    // payload sessions
+    TTimeRangeMillisec currentSessionRange;
+    TSessionNum currentSessionNum = m_state.payloadDataRangesInfo.front()->sesNum;
+    currentSessionRange.first = m_state.payloadDataRangesInfo.front()->timestampRangeMillisec.first;
+
+    for( int i = 0; i < m_state.payloadDataRangesInfo.size(); i++ ){
+        SBeacon::SDataBlock * block = m_state.payloadDataRangesInfo[ i ];
+
+        if( block->sesNum != currentSessionNum ){
+            SBeacon::SDataBlock * prevBlock = m_state.payloadDataRangesInfo[ i-1 ];
+
+            // close previous
+            currentSessionRange.second = prevBlock->timestampRangeMillisec.second;
+            m_state.sessionsTimeRangeMillisec.push_back( currentSessionRange );
+
+            // open next
+            currentSessionRange.first = block->timestampRangeMillisec.first;
+            currentSessionNum = block->sesNum;
+        }
     }
+
+    currentSessionRange.second = m_state.payloadDataRangesInfo.back()->timestampRangeMillisec.second;
+    m_state.sessionsTimeRangeMillisec.push_back( currentSessionRange );
+
+    // global range
+    m_state.globalTimeRangeMillisec.first = m_state.dataRangesInfo.front()->timestampRangeMillisec.first;
+    m_state.globalTimeRangeMillisec.second = m_state.dataRangesInfo.back()->timestampRangeMillisec.second;
+}
+
+const DatasourceReader::SState & DatasourceReader::getState() const {
 
     return m_state;
 }
@@ -118,8 +129,7 @@ bool DatasourceReader::createBeacons( std::unordered_map<common_types::TLogicSte
 
     destroyBeacons( _beacons );
 
-    const std::vector<SEventsSessionInfo> sessionsInfo = m_database->getPersistenceSetSessions( m_state.settings.persistenceSetId );
-    const std::vector<SEventsSessionInfo> correctedSessions = checkSessionsForEmptyFrames( sessionsInfo );
+    const std::vector<SEventsSessionInfo> sessionsInfo = m_state.settings.descriptor->getSessionsDescription();
 
     std::vector<SEventsSessionInfo>::size_type currentSessionIdx = 0;
     int32_t emptyStepCount = 0;
@@ -128,7 +138,7 @@ bool DatasourceReader::createBeacons( std::unordered_map<common_types::TLogicSte
     TLogicStep frameStep = 0;
     while( true ){
         // sections for beacon
-        const vector<SBeacon::SDataBlock *> blocks = createBlocks(  correctedSessions,
+        const vector<SBeacon::SDataBlock *> blocks = createBlocks(  sessionsInfo,
                                                                     currentPassedPoint,
                                                                     currentSessionIdx,
                                                                     emptyStepCount );
@@ -194,7 +204,7 @@ std::vector<DatasourceReader::SBeacon::SDataBlock *> DatasourceReader::createBlo
 
         // empty area
         if( _emptyStepCount > 0 ){
-            if( _emptyStepCount > neededSteps ){
+            if( _emptyStepCount >= neededSteps ){
                 SBeacon::SDataBlock * block = new SBeacon::SDataBlock();
                 block->empty = true;
                 block->emptyStepsCount = neededSteps;
@@ -242,8 +252,10 @@ std::vector<DatasourceReader::SBeacon::SDataBlock *> DatasourceReader::createBlo
             block->sesNum = session->number;
             block->logicStepRange.first = session->minLogicStep + _currentPassedPoint.logicStepCounter;
             block->logicStepRange.second = (block->logicStepRange.first - 1) + neededSteps;
-            block->timestampRangeMillisec.first = getTimestampByLogicStep( session, block->logicStepRange.first );
-            block->timestampRangeMillisec.second = getTimestampByLogicStep( session, block->logicStepRange.second );
+            block->timestampRangeMillisec.first = m_state.settings.descriptor->getTimestampByLogicStep( session->number, block->logicStepRange.first );
+            block->timestampRangeMillisec.second = m_state.settings.descriptor->getTimestampByLogicStep( session->number, block->logicStepRange.second );
+//            block->timestampRangeMillisec.first = getTimestampByLogicStep( session, block->logicStepRange.first );
+//            block->timestampRangeMillisec.second = getTimestampByLogicStep( session, block->logicStepRange.second );
             dataBlocks.push_back( block );
 
             _currentPassedPoint.logicStepCounter += neededSteps;
@@ -257,8 +269,10 @@ std::vector<DatasourceReader::SBeacon::SDataBlock *> DatasourceReader::createBlo
             block->sesNum = session->number;
             block->logicStepRange.first = session->minLogicStep + _currentPassedPoint.logicStepCounter;
             block->logicStepRange.second = (block->logicStepRange.first - 1) + availableSteps;
-            block->timestampRangeMillisec.first = getTimestampByLogicStep( session, block->logicStepRange.first );
-            block->timestampRangeMillisec.second = getTimestampByLogicStep( session, block->logicStepRange.second );
+            block->timestampRangeMillisec.first = m_state.settings.descriptor->getTimestampByLogicStep( session->number, block->logicStepRange.first );
+            block->timestampRangeMillisec.second = m_state.settings.descriptor->getTimestampByLogicStep( session->number, block->logicStepRange.second );
+//            block->timestampRangeMillisec.first = getTimestampByLogicStep( session, block->logicStepRange.first );
+//            block->timestampRangeMillisec.second = getTimestampByLogicStep( session, block->logicStepRange.second );
             dataBlocks.push_back( block );
 
             _currentPassedPoint.logicStepCounter += availableSteps;
@@ -295,72 +309,12 @@ std::vector<DatasourceReader::SBeacon::SDataBlock *> DatasourceReader::createBlo
 
 int64_t DatasourceReader::getTimestampByLogicStep( const SEventsSessionInfo * _session, common_types::TLogicStep _logicStep ){
 
-    auto iter = std::find_if( _session->steps.begin(), _session->steps.end(), FunctorObjectStep(_logicStep) );
+    auto iter = std::find_if( _session->steps.begin(), _session->steps.end(), FEqualSObjectStep(_logicStep) );
     if( iter != _session->steps.end() ){
         return ( * iter ).timestampMillisec;
     }
 
     return -1;
-}
-
-std::vector<SEventsSessionInfo> DatasourceReader::checkSessionsForEmptyFrames( const std::vector<SEventsSessionInfo> & _sessionInfo ){
-
-    std::vector<SEventsSessionInfo> out;
-
-    if( _sessionInfo.empty() ){
-        return out;
-    }
-
-    common_types::TSessionNum currentSessionLastNumber = 0;
-
-    // for each session
-    for( auto iter = _sessionInfo.begin(); iter != _sessionInfo.end(); ++iter ){
-        const SEventsSessionInfo & info = ( * iter );
-
-        vector<SEventsSessionInfo> slicedSession;
-
-        // init first session
-        SEventsSessionInfo currentNewSession;
-        currentNewSession.number = info.number;
-        currentNewSession.minLogicStep = info.steps[ 0 ].logicStep;
-        currentNewSession.minTimestampMillisec = info.steps[ 0 ].timestampMillisec;
-        currentNewSession.steps.push_back( info.steps[ 0 ] );
-
-        // find the gaps inside it
-        for( std::size_t i = 0; i < info.steps.size(); i++ ){
-
-            if( (info.steps[ i ].logicStep + 1) != info.steps[ i+1 ].logicStep ){
-                // close current session
-                currentNewSession.maxLogicStep = info.steps[ i ].logicStep;
-                currentNewSession.maxTimestampMillisec = info.steps[ i ].timestampMillisec;
-                if( currentNewSession.minLogicStep != currentNewSession.maxLogicStep ){
-                    currentNewSession.steps.push_back( info.steps[ i ] );
-                }
-                slicedSession.push_back( currentNewSession );
-                currentNewSession.clear();
-
-                // open new one
-                currentNewSession.number = info.number;
-                currentNewSession.minLogicStep = info.steps[ i+1 ].logicStep;
-                currentNewSession.minTimestampMillisec = info.steps[ i+1 ].timestampMillisec;
-                currentNewSession.steps.push_back( info.steps[ i+1 ] );
-            }
-            else{
-                // continue to accumulate current session
-                currentNewSession.steps.push_back( info.steps[ i ] );
-            }
-        }
-
-        // insert new sessions in position of sliced session ( instead it )
-        if( ! slicedSession.empty() ){
-            out.insert( out.end(), slicedSession.begin(), slicedSession.end() );
-        }
-        else{
-            out.push_back( info );
-        }
-    }
-
-    return out;
 }
 
 bool DatasourceReader::moveStepWindow( int64_t _stepFormal, int64_t & _currentPackHeadStep ){
@@ -417,7 +371,7 @@ bool DatasourceReader::loadSingleFrame( common_types::TLogicStep _logicStep, TOb
 
         filter.maxLogicStep = filter.minLogicStep;
 
-        TObjectsAtOneStep data = m_database->readTrajectoryData( filter );
+        TObjectsAtOneStep data = m_state.settings.databaseMgr->readTrajectoryData( filter );
         _step.swap( data );
 
         return true;
@@ -438,6 +392,7 @@ bool DatasourceReader::loadPackage( int64_t _currentPackHeadStep, std::vector<TO
         }
 
         int32_t positionCounter = 0;
+        bool firstBlock = true; // NOTE: at the beginning '0' index grab ONE position from empty area ( [0] + 4 = 4 -> [0][1][2][3] and [4] for next data )
 
         for( const SBeacon::SDataBlock * block : beacon.dataBlocks ){
 
@@ -450,7 +405,7 @@ bool DatasourceReader::loadPackage( int64_t _currentPackHeadStep, std::vector<TO
 
                 assert( (filter.maxLogicStep - filter.minLogicStep) <= PACKAGE_SIZE );
 
-                const TObjectsAtOneStep data = m_database->readTrajectoryData( filter );
+                const TObjectsAtOneStep data = m_state.settings.databaseMgr->readTrajectoryData( filter );
                 TLogicStep currentLogicStep = data.front().logicTime;
 
                 for( const common_types::SPersistenceTrajectory & object : data ){
@@ -462,7 +417,6 @@ bool DatasourceReader::loadPackage( int64_t _currentPackHeadStep, std::vector<TO
                     else{
                         positionCounter += object.logicTime - currentLogicStep;
                         currentLogicStep = object.logicTime;
-//                        positionCounter++;
                         TObjectsAtOneStep & readCell = _steps[ positionCounter ];
                         readCell.push_back( object );
                     }
@@ -471,7 +425,13 @@ bool DatasourceReader::loadPackage( int64_t _currentPackHeadStep, std::vector<TO
             // empty area
             else{
                 positionCounter += block->emptyStepsCount;
+                if( ! firstBlock ){
+                    // NOTE: on first block '0' index gives additional position, further we should ourself get this 'additional' pos
+                    positionCounter++;
+                }
             }
+
+            firstBlock = false;
         }
     }
     else{

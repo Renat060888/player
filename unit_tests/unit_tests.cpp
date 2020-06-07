@@ -8,6 +8,12 @@
 #include "unit_tests.h"
 
 using namespace std;
+using namespace common_types;
+
+static constexpr const char * PRINT_HEADER = "UnitTest:";
+static const TContextId CONTEXT_ID = 777;
+static const TMissionId MISSION_ID = 555;
+static const int64_t QUANTUM_INTERVAL_MILLISEC = 1000;
 
 UnitTests::UnitTests( int _argc, char ** _argv )
 {
@@ -16,46 +22,68 @@ UnitTests::UnitTests( int _argc, char ** _argv )
 
 bool UnitTests::run(){
 
-    return RUN_ALL_TESTS();
+//    return ::RUN_ALL_TESTS();
 
-    static constexpr const char * PRINT_HEADER = "UnitTest:";
+    PlayerWorker::SInitSettings settingsPlayer;
+    settingsPlayer.ctxId = 372;
 
-    // db
-    DatabaseManagerBase * database = DatabaseManagerBase::getInstance();
-
-    DatabaseManagerBase::SInitSettings settings;
-    settings.host = CONFIG_PARAMS.baseParams.MONGO_DB_ADDRESS;
-    settings.databaseName = CONFIG_PARAMS.baseParams.MONGO_DB_NAME;
-
-    if( ! database->init(settings) ){
+    PlayerWorker player;
+    if( ! player.init(settingsPlayer) ){
         ::exit( EXIT_FAILURE );
     }
 
-    // pd
-    const vector<common_types::SPersistenceMetadata> ctxMetadatas = database->getPersistenceSetMetadata( (common_types::TContextId)777 );
-    const common_types::SPersistenceMetadata & ctxMetadata = ctxMetadatas[ 0 ];
+    player.start();
 
-    for( const common_types::SPersistenceMetadataRaw & processedSensor : ctxMetadata.persistenceFromRaw ){
-        DatasourceReader * datasource = new DatasourceReader();
-
-        DatasourceReader::SInitSettings settings;
-        settings.persistenceSetId = processedSensor.persistenceSetId;
-        settings.updateStepMillisec = processedSensor.timeStepIntervalMillisec;
-        settings.ctxId = 777;
-        if( ! datasource->init(settings) ){
-            VS_LOG_ERROR << PRINT_HEADER << " failed to create datasource for mission: " << processedSensor.missionId << endl;
-            continue;
-        }
-
-        const DatasourceReader::SState & state = datasource->getState();
-
-        VS_LOG_TRACE << PRINT_HEADER
-                     << " raw datasrc on mission " << processedSensor.missionId
-                     << " time begin ms " << state.globalTimeRangeMillisec.first
-                     << " time end ms " << state.globalTimeRangeMillisec.second
-                     << " steps " << state.stepsCount
-                     << endl;
+    while( true ){
+        // dummy
+        std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
 
     ::exit( EXIT_SUCCESS );
 }
+
+void UnitTests::insertTestData(){
+
+    // db
+    DatabaseManagerBase::SInitSettings settings;
+    settings.host = "localhost";
+    settings.databaseName = "unit_tests";
+
+    DatabaseManagerBase * databaseMgr = DatabaseManagerBase::getInstance();
+    const bool success = databaseMgr->init(settings);
+    assert( success && "db must be inited properly" );
+
+    // clear everything
+    databaseMgr->deleteTotalData( CONTEXT_ID );
+    databaseMgr->deleteSessionDescription( CONTEXT_ID );
+    databaseMgr->deletePersistenceSetMetadata( CONTEXT_ID );
+
+    // metadata
+    SPersistenceMetadataRaw rawMetadataInput;
+    rawMetadataInput.contextId = CONTEXT_ID;
+    rawMetadataInput.missionId = MISSION_ID;
+    rawMetadataInput.lastRecordedSession = 1;
+    rawMetadataInput.sourceType = common_types::EPersistenceSourceType::AUTONOMOUS_RECORDER;
+    rawMetadataInput.timeStepIntervalMillisec = QUANTUM_INTERVAL_MILLISEC;
+
+    const TPersistenceSetId persId = databaseMgr->writePersistenceSetMetadata( rawMetadataInput );
+    rawMetadataInput.persistenceSetId = persId;
+    assert( persId != -1 && "pers id must be correct" );
+
+    // payload
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

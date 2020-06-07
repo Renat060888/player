@@ -4,7 +4,7 @@
 #include <thread>
 
 #include "dispatcher_user.h"
-#include "dispatcher_player_contoller.h"
+#include "dispatcher_player.h"
 
 class AnalyticManagerFacade
 {
@@ -32,7 +32,7 @@ public:
     void shutdown();
 
     DispatcherUser * getUserDispatcher();
-    DispatcherPlayerContoller * getPlayerDispatcher();
+    DispatcherPlayer * getPlayerDispatcher();
 
 
 private:
@@ -44,7 +44,7 @@ private:
 
     // service
     DispatcherUser m_userDispatcher;
-    DispatcherPlayerContoller m_playerControllerDispatcher;
+    DispatcherPlayer m_playerControllerDispatcher;
     std::thread * m_threadMaintenance;
 };
 

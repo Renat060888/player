@@ -1,6 +1,7 @@
 
 #include <jsoncpp/json/writer.h>
 
+#include "system/system_environment_facade_player.h"
 #include "system/objrepr_bus_player.h"
 #include "analyze/analytic_manager_facade.h"
 #include "cmd_context_open.h"
@@ -38,14 +39,21 @@ bool CommandContextOpen::exec(){
     string errMsg;
     if( userHasPermission(m_userId, (SIncomingCommandServices *)m_services, errMsg) ){
         const TContextId ctxId = OBJREPR_BUS.getContextIdByName( m_contextName );
-        const TContextId ctxId2 = 777;
 
-        DispatcherPlayerContoller * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
-        if( playerDipatcher->requestPlayer(m_userId, ctxId2) ){
+        TPlayerId playerId;
+        DispatcherPlayer * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
+        if( playerDipatcher->requestPlayer(m_userId, ctxId, playerId) ){
             Json::Value rootRecord;
             rootRecord[ "cmd_name" ] = "ctx_open";
             rootRecord[ "error_occured" ] = false;
             rootRecord[ "code" ] = "OK";
+
+            //
+            SWALClientOperation operation;
+            operation.commandFullText = m_requestFullText;
+            operation.uniqueKey = playerId; // TODO: come up with a more elegant solution
+            operation.begin = true;
+            ((SIncomingCommandServices *)m_services)->systemEnvironment->serviceForWriteAheadLogging()->openOperation( operation );
 
             Json::FastWriter jsonWriter;
             sendResponse( jsonWriter.write(rootRecord) );

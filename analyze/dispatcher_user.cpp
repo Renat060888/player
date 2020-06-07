@@ -8,7 +8,7 @@ using namespace std;
 using namespace common_types;
 
 static constexpr const char * PRINT_HEADER = "UserDispatcher:";
-static constexpr int64_t USER_TIMEOUT_MILLISEC = 30000;
+static constexpr int64_t USER_TIMEOUT_MILLISEC = 20000;
 
 const common_types::TUserId DispatcherUser::INVALID_USER_ID = "invalid_user_id";
 
@@ -39,7 +39,10 @@ void DispatcherUser::runClock(){
         PUserState state = ( * iter );
 
         if( (common_utils::getCurrentTimeMillisec() - state->lastPingMillisec) > USER_TIMEOUT_MILLISEC ){
-            VS_LOG_WARN << PRINT_HEADER << " user disappeared [" << state->userId << "]" << endl;
+            VS_LOG_WARN << PRINT_HEADER
+                        << " user disappeared [" << state->userId << "]"
+                        << " ip: " << state->userIp
+                        << endl;
 
             iter = m_users.erase( iter );
             m_usersById.erase( state->userId );

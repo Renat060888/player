@@ -13,7 +13,7 @@ CommandPlayerControllerPing::CommandPlayerControllerPing( common_types::SIncomin
 
 bool CommandPlayerControllerPing::exec(){
 
-    DispatcherPlayerContoller * dpc = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
+    DispatcherPlayer * dpc = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
     dpc->updatePlayerState( playerState );
     return true;
 }

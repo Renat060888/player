@@ -10,6 +10,7 @@
 #include "player_controller.h"
 
 using namespace std;
+using namespace common_types;
 
 static constexpr int PING_TO_AGENT_INTERVAL_MILLISEC = 1000;
 static constexpr const char * PRINT_HEADER = "PlayerController:";
@@ -24,8 +25,14 @@ PlayerController::PlayerController()
 
 PlayerController::~PlayerController(){
 
+    VS_LOG_INFO << PRINT_HEADER << " begin shutdown" << endl;
+
+    m_worker.stop(); // NOTE: player must stop emit into objrepr before it's closing
     m_shutdownCalled = true;
     common_utils::threadShutdown( m_trAsyncLaunch );
+    OBJREPR_BUS.closeContext();
+
+    VS_LOG_INFO << PRINT_HEADER << " shutdown success" << endl;
 }
 
 void PlayerController::callbackNetworkRequest( PEnvironmentRequest _request ){
@@ -55,7 +62,13 @@ void PlayerController::callbackNetworkRequest( PEnvironmentRequest _request ){
             break;
         }
         case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_STEP : {
-            processMsgStepForward( msgAgent );
+            const ::protocol_player_agent_to_controller::MessageRequestPlayStep & step = msgAgent.msg_play_step();
+            if( step.forward() ){
+                processMsgStepForward( msgAgent );
+            }
+            else{
+                processMsgStepBackward( msgAgent );
+            }
             break;
         }
         case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_FROM_POS : {
@@ -63,7 +76,16 @@ void PlayerController::callbackNetworkRequest( PEnvironmentRequest _request ){
             break;
         }
         case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_PLAY_SPEED : {
-            processMsgIncreasePlayingSpeed( msgAgent );
+            const ::protocol_player_agent_to_controller::MessageRequestPlaySpeed & speed = msgAgent.msg_play_speed();
+            if( speed.normalize() ){
+                processMsgNormalizePlayingSpeed( msgAgent );
+            }
+            else if( speed.increase() ){
+                processMsgIncreasePlayingSpeed( msgAgent );
+            }
+            else if( ! speed.increase() ){
+                processMsgDecreasePlayingSpeed( msgAgent );
+            }
             break;
         }
         case protocol_player_agent_to_controller::EPlayerAgentCommandType::PACT_SET_RANGE : {
@@ -148,6 +170,11 @@ void PlayerController::processMsgNormalizePlayingSpeed( const protocol_player_ag
     m_worker.normalizePlayingSpeed();
 }
 
+void PlayerController::processMsgShutdownController(){
+
+    m_shutdownCalled = true;
+}
+
 bool PlayerController::init( const SInitSettings & _settings ){
 
     m_state.settings = _settings;
@@ -163,6 +190,10 @@ bool PlayerController::init( const SInitSettings & _settings ){
     }
 
     // TODO: register in GDM
+#else
+    if( ! OBJREPR_BUS.openContext(_settings.ctxId) ){
+        return false;
+    }
 #endif
 
     // worker
@@ -180,6 +211,7 @@ bool PlayerController::init( const SInitSettings & _settings ){
 
     PNetworkProvider provider = std::dynamic_pointer_cast<INetworkProvider>( m_networkClient );
     provider->addObserver( this );
+    m_networkProvider = provider;
 
     m_pingRequest = m_networkClient->getRequestInstance();
 
@@ -192,20 +224,24 @@ bool PlayerController::init( const SInitSettings & _settings ){
 }
 
 void PlayerController::threadAsyncLaunch(){
+    assert( m_state.settings.async );
 
     while( ! m_shutdownCalled ){
         pingPlayerAgent();
+
+        m_networkProvider->runNetworkCallbacks();
 
         std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
 }
 
 void PlayerController::launch(){
-
     assert( ! m_state.settings.async );
 
     while( ! m_shutdownCalled ){
         pingPlayerAgent();
+
+        m_networkProvider->runNetworkCallbacks();
 
         std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
@@ -213,7 +249,7 @@ void PlayerController::launch(){
 
 std::string PlayerController::createPingMessage(){
 
-    PlayerWorker::SState * state = (PlayerWorker::SState *)m_worker.getState();
+    const PlayerWorker::SState * state = & m_worker.getState();
 
     // player state
     Json::Value playerState;
@@ -224,13 +260,19 @@ std::string PlayerController::createPingMessage(){
 
     Json::Value datasetsRecord;
     const DatasourceMixer::SState & mixerState = state->mixer->getState();
-    for( DatasourceReader * datasrc : mixerState.settings.datasources ){
+    for( const DatasourceReader * datasrc : mixerState.settings.datasourceReaders ){
 
         Json::Value rangesRecord;
-        for( const DatasourceReader::SBeacon::SDataBlock * block : datasrc->getState().payloadDataRangesInfo ){
+//        for( const DatasourceReader::SBeacon::SDataBlock * block : datasrc->getState().payloadDataRangesInfo ){
+//            Json::Value rangeRecord;
+//            rangeRecord["range_left"] = (long long)block->timestampRangeMillisec.first;
+//            rangeRecord["range_right"] = (long long)block->timestampRangeMillisec.second;
+//            rangesRecord.append( rangeRecord );
+//        }
+        for( const TTimeRangeMillisec & timeRange : datasrc->getState().sessionsTimeRangeMillisec ){
             Json::Value rangeRecord;
-            rangeRecord["range_left"] = (long long)block->timestampRangeMillisec.first;
-            rangeRecord["range_right"] = (long long)block->timestampRangeMillisec.second;
+            rangeRecord["range_left"] = (long long)timeRange.first;
+            rangeRecord["range_right"] = (long long)timeRange.second;
             rangesRecord.append( rangeRecord );
         }
 

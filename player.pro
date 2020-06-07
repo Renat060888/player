@@ -54,7 +54,6 @@ SOURCES += \
     analyze/datasource_mixer.cpp \
     analyze/datasource_descriptor.cpp \
     analyze/datasource_reader.cpp \
-    analyze/dispatcher_player_contoller.cpp \
     analyze/dispatcher_user.cpp \
     analyze/proxy_player_controller.cpp \
     communication/commands/cmd_player_from_pos.cpp \
@@ -88,12 +87,13 @@ SOURCES += \
     system/path_locator.cpp \
     system/objrepr_bus_player.cpp \
     system/system_environment_facade_player.cpp \
+    analyze/dispatcher_player.cpp
 
 contains( DEFINES, UNIT_TESTS_GOOGLE ){
     message("connect 'gtests' library")
 SOURCES += \
     unit_tests/unit_tests.cpp \
-    unit_tests/datasource_reader_test.cpp
+    unit_tests/test_datasource_reader.cpp
 }
 
 HEADERS += \
@@ -102,7 +102,6 @@ HEADERS += \
     analyze/datasource_mixer.h \
     analyze/datasource_descriptor.h \
     analyze/datasource_reader.h \
-    analyze/dispatcher_player_contoller.h \
     analyze/dispatcher_user.h \
     analyze/proxy_player_controller.h \
     communication/commands/cmd_player_from_pos.h \
@@ -138,12 +137,12 @@ HEADERS += \
     system/path_locator.h \
     system/objrepr_bus_player.h \
     system/system_environment_facade_player.h \
-    unit_tests/unit_tests.h \
+    analyze/dispatcher_player.h
 
 contains( DEFINES, UNIT_TESTS_GOOGLE ){
     message("connect 'gtests' library")
 HEADERS += \
     unit_tests/unit_tests.h \
-    unit_tests/datasource_reader_test.h
+    unit_tests/test_datasource_reader.h
 }
 

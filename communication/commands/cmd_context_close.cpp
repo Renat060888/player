@@ -1,6 +1,7 @@
 
 #include <jsoncpp/json/writer.h>
 
+#include "system/system_environment_facade_player.h"
 #include "analyze/analytic_manager_facade.h"
 #include "cmd_context_close.h"
 
@@ -36,19 +37,35 @@ bool CommandContextClose::exec(){
 
     string errMsg;
     if( userHasPermission(m_userId, (SIncomingCommandServices *)m_services, errMsg) ){
-        DispatcherPlayerContoller * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
+        DispatcherPlayer * playerDipatcher = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
 
         IPlayerService * player = playerDipatcher->getPlayerByUser( m_userId );
-        playerDipatcher->releasePlayer( player->getServiceState().playerId );
+        if( player ){
+            const TPlayerId playerId = player->getServiceState().playerId;
+            playerDipatcher->releasePlayer( player->getServiceState().playerId );
 
-        Json::Value rootRecord;
-        rootRecord[ "cmd_name" ] = "ctx_close";
-        rootRecord[ "error_occured" ] = false;
-        rootRecord[ "code" ] = "OK";
+            Json::Value rootRecord;
+            rootRecord[ "cmd_name" ] = "ctx_close";
+            rootRecord[ "error_occured" ] = false;
+            rootRecord[ "code" ] = "OK";
 
-        Json::FastWriter jsonWriter;
-        sendResponse( jsonWriter.write(rootRecord) );
-        return true;
+            //
+            ((SIncomingCommandServices *)m_services)->systemEnvironment->serviceForWriteAheadLogging()->closeClientOperation( playerId );
+
+            Json::FastWriter jsonWriter;
+            sendResponse( jsonWriter.write(rootRecord) );
+            return true;
+        }
+        else{
+            Json::Value rootRecord;
+            rootRecord[ "cmd_name" ] = "ctx_close";
+            rootRecord[ "error_occured" ] = true;
+            rootRecord[ "code" ] = playerDipatcher->getState().lastError;
+
+            Json::FastWriter jsonWriter;
+            sendResponse( jsonWriter.write(rootRecord) );
+            return false;
+        }
     }
     else{
         sendResponse( errMsg );

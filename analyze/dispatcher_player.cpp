@@ -1,6 +1,7 @@
 
 #include <microservice_common/system/logger.h>
 
+#include "system/system_environment_facade_player.h"
 #include "common/common_utils.h"
 #include "dispatcher_player.h"
 
@@ -69,6 +70,21 @@ public:
 };
 // < functors
 
+void DispatcherPlayer::callbackUserOnline( const common_types::TUserId & _id, bool _online ){
+
+    // drop player of disappeared user
+    if( ! _online ){
+        auto iter = m_playersByUserId.find( _id );
+        if( iter != m_playersByUserId.end() ){
+            const IPlayerService * playService = iter->second;
+
+            // NOTE: not only destroy user's player, but also clear history about this request
+            m_state.settings.systemEnvironment->serviceForWriteAheadLogging()->closeClientOperation( playService->getServiceState().playerId );
+            releasePlayer( playService->getServiceState().playerId );
+        }
+    }
+}
+
 void DispatcherPlayer::runClock(){
 
     for( auto iter = m_monitoringDescriptors.begin(); iter != m_monitoringDescriptors.end(); ){
@@ -95,17 +111,22 @@ void DispatcherPlayer::runClock(){
             ++iter;
         }
     }
+
+    // future release
+    if( m_fuPlayerControllerAsyncLaunch.valid() ){
+        const std::future_status futureStatus = m_fuPlayerControllerAsyncLaunch.wait_for( std::chrono::milliseconds(10) );
+        if( std::future_status::ready == futureStatus ){
+
+            const bool rtFromFuture = m_fuPlayerControllerAsyncLaunch.get();
+            VS_LOG_INFO << PRINT_HEADER << " future ready, return code: " << rtFromFuture << endl;
+        }
+    }
 }
 
-bool DispatcherPlayer::requestPlayer( const common_types::TUserId & _userId,
-                                               const common_types::TContextId & _ctxId ){
-    //
-    const TPlayerId newId = common_utils::generateUniqueId();
-    m_playerIdByUserId.insert( {newId, _userId} );
+bool DispatcherPlayer::playerControllerAsyncLaunch( const TPlayerId _newId, const common_types::TContextId _ctxId ){
 
-    // NOTE: must be in another process
     PlayerController::SInitSettings settings;
-    settings.id = newId;
+    settings.id = _newId;
     settings.ctxId = _ctxId;
     settings.async = true;
 
@@ -115,13 +136,27 @@ bool DispatcherPlayer::requestPlayer( const common_types::TUserId & _userId,
     }
 
     m_realPlayerControllersForTest.push_back( playerContoller );
+    return true;
+}
+
+bool DispatcherPlayer::requestPlayer( const common_types::TUserId & _userId,
+        const common_types::TContextId & _ctxId,
+        TPlayerId & _playerId ){
+
+    // remember correlation between user & his player
+    const TPlayerId newId = common_utils::generateUniqueId();
+    m_playerIdByUserId.insert( {newId, _userId} );
+    _playerId = newId;
+
+    // launch player in another Thread instead of another Process ( for debug purposes )
+    m_fuPlayerControllerAsyncLaunch = std::async( std::launch::async, & DispatcherPlayer::playerControllerAsyncLaunch, this, newId, _ctxId );
 
     // TODO: create new process via ProcessLauncher ( player --contorller --player-id=0 --context-id=0 ... )
 
     return true;
 }
 
-void DispatcherPlayer::releasePlayer( const common_types::TPlayerId & _id ){
+void DispatcherPlayer::releasePlayer( const common_types::TPlayerId _id ){
 
     auto iter = m_monitoringDescriptorsByPlayerId.find( _id );
     if( iter != m_monitoringDescriptorsByPlayerId.end() ){
@@ -159,6 +194,9 @@ void DispatcherPlayer::releasePlayer( const common_types::TPlayerId & _id ){
                 ++iter;
             }
         }
+    }
+    else{
+        VS_LOG_WARN << PRINT_HEADER << " nothing to release, unknown player id: " << _id << endl;
     }
 }
 

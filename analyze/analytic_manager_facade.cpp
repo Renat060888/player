@@ -1,9 +1,12 @@
 
-#include "system/system_environment_facade_player.h"
+#include <microservice_common/system/logger.h>
 
+#include "system/system_environment_facade_player.h"
 #include "analytic_manager_facade.h"
 
 using namespace std;
+
+static constexpr const char * PRINT_HEADER = "AnalyticMgr:";
 
 AnalyticManagerFacade::AnalyticManagerFacade()
     : shutdownCalled(false)
@@ -26,11 +29,14 @@ bool AnalyticManagerFacade::init( const SInitSettings & _settings ){
     }
 
     // player dispatching
-    DispatcherPlayerContoller::SInitSettings pcdSettings;
+    DispatcherPlayer::SInitSettings pcdSettings;
     pcdSettings.serviceInternalCommunication = _settings.services.serviceInternalCommunication;
+    pcdSettings.systemEnvironment = _settings.services.systemEnvironment;
     if( ! m_playerControllerDispatcher.init(pcdSettings) ){
         return false;
     }
+
+    m_userDispatcher.addObserver( & m_playerControllerDispatcher );
 
     m_threadMaintenance = new std::thread( & AnalyticManagerFacade::threadMaintenance, this );
 
@@ -50,6 +56,8 @@ void AnalyticManagerFacade::shutdown(){
 
 void AnalyticManagerFacade::threadMaintenance(){
 
+    VS_LOG_INFO << PRINT_HEADER << " start a maintenance THREAD" << endl;
+
     while( ! shutdownCalled ){
 
         m_userDispatcher.runClock();
@@ -57,9 +65,11 @@ void AnalyticManagerFacade::threadMaintenance(){
 
         std::this_thread::sleep_for( std::chrono::milliseconds(10) );
     }
+
+    VS_LOG_INFO << PRINT_HEADER << " exit from a maintenance THREAD" << endl;
 }
 
-DispatcherPlayerContoller * AnalyticManagerFacade::getPlayerDispatcher(){
+DispatcherPlayer * AnalyticManagerFacade::getPlayerDispatcher(){
     return & m_playerControllerDispatcher;
 }
 

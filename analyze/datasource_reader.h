@@ -41,13 +41,16 @@ public:
 
     struct SInitSettings {
         SInitSettings()
-            : persistenceSetId(-1)
+            : persistenceSetId(common_vars::INVALID_PERS_ID)
             , updateStepMillisec( 1000 / 24 ) // 24 fps ~ 41 ms
+            , databaseMgr(nullptr)
+            , descriptor(nullptr)
         {}
 
-        common_types::TContextId ctxId;
         common_types::TPersistenceSetId persistenceSetId;
         int64_t updateStepMillisec;
+        DatabaseManagerBase * databaseMgr;
+        class DatasourceDescriptor * descriptor;
     };
 
     struct SState {
@@ -60,6 +63,7 @@ public:
         std::vector<SBeacon::SDataBlock *> payloadDataRangesInfo;
         common_types::TTimeRangeMillisec globalTimeRangeMillisec;
         int64_t stepsCount;
+        std::vector<common_types::TTimeRangeMillisec> sessionsTimeRangeMillisec;
         // refs
         SInitSettings settings;
     };
@@ -74,7 +78,7 @@ public:
     }
 
     bool init( const SInitSettings & _settings );
-    const SState & getState();
+    const SState & getState() const;
 
     bool read( common_types::TLogicStep _step );
     bool readInstant( common_types::TLogicStep _step );
@@ -89,8 +93,7 @@ private:
     bool loadPackage( int64_t _currentPackHeadStep, std::vector<TObjectsAtOneStep> & _steps );
 
     // metadata
-    bool createBeacons( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons );
-    std::vector<common_types::SEventsSessionInfo> checkSessionsForEmptyFrames( const std::vector<common_types::SEventsSessionInfo> & _sessionInfo );
+    bool createBeacons( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons );    
     int64_t getTimestampByLogicStep( const common_types::SEventsSessionInfo * _session, common_types::TLogicStep _logicStep );
     void setTimestampToEmptyAreas( std::unordered_map<common_types::TLogicStep, SBeacon> & _beacons );
     std::vector<SBeacon::SDataBlock *> createBlocks( const std::vector<common_types::SEventsSessionInfo> & _sessionsInfo,
@@ -116,7 +119,7 @@ private:
     int64_t m_currentReadStep;
 
     // service
-    DatabaseManagerBase * m_database;
+
 };
 
 #endif // PLAYING_DATASOURCE_H

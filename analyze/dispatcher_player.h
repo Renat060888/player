@@ -2,6 +2,7 @@
 #define DISPATCHER_PLAYER_CONTOLLER_H
 
 #include <map>
+#include <future>
 
 #include "common/common_types.h"
 #include "proxy_player_controller.h"
@@ -11,7 +12,7 @@
 
 class SPlayerDescriptor;
 
-class DispatcherPlayer
+class DispatcherPlayer : public common_types::IUserDispatcherObserver
 {
     friend class CommandPlayerControllerPing;
 public:
@@ -23,6 +24,7 @@ public:
 
     struct SInitSettings {
         common_types::IServiceInternalCommunication * serviceInternalCommunication;
+        SystemEnvironmentFacadePlayer * systemEnvironment;
     };
 
     struct SState {
@@ -38,8 +40,8 @@ public:
 
     void runClock();
 
-    bool requestPlayer( const common_types::TUserId & _userId, const common_types::TContextId & _ctxId );
-    void releasePlayer( const common_types::TPlayerId & _id );
+    bool requestPlayer( const common_types::TUserId & _userId, const common_types::TContextId & _ctxId, common_types::TPlayerId & _playerId );
+    void releasePlayer( const common_types::TPlayerId _id );
 
     void addObserver( IPlayerDispatcherObserver * _observer );
     void removeObserver( IPlayerDispatcherObserver * _observer );
@@ -51,7 +53,11 @@ public:
 
 
 private:
+    virtual void callbackUserOnline( const common_types::TUserId & _id, bool _online ) override;
+
     void updatePlayerState( const common_types::SPlayingServiceState & _state );
+
+    bool playerControllerAsyncLaunch( const common_types::TPlayerId newId, const common_types::TContextId _ctxId ); // TODO: temp
 
     // data
     SState m_state;
@@ -65,11 +71,10 @@ private:
     std::map<common_types::TPlayerId, SPlayerDescriptor *> m_monitoringDescriptorsByPlayerId;
     std::vector<SPlayerDescriptor *> m_monitoringDescriptors;
 
-    // TODO: temp ( must be in separate process )
-    std::vector<PlayerController *> m_realPlayerControllersForTest;
+    std::vector<PlayerController *> m_realPlayerControllersForTest; // TODO: temp ( must be in separate process )
 
-    // service
-
+    // service    
+    std::future<bool> m_fuPlayerControllerAsyncLaunch; // TODO: temp
 
 };
 

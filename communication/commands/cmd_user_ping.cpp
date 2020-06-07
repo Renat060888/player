@@ -87,7 +87,7 @@ bool CommandUserPing::exec(){
         du->updateUserState( m_userState );
 
         // reflect to user his player state
-        DispatcherPlayerContoller * dpc = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
+        DispatcherPlayer * dpc = ((SIncomingCommandServices *)m_services)->analyticManager->getPlayerDispatcher();
         IPlayerService * player = dpc->getPlayerByUser( m_userState.userId );
         if( player ){
             Json::Value rootRecord;

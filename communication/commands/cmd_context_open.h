@@ -18,6 +18,7 @@ private:
     common_types::TUserId m_userId;
     std::string m_contextName;
 
+    std::string m_requestFullText;
 
 
 };
